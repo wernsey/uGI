@@ -1,0 +1,7 @@
+.gdbinit
+*.o
+*.zip
+ugi
+*.exe
+doc
+.vscode
