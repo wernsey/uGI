@@ -9,28 +9,28 @@
  */
 
 typedef enum {
-    MSG_START,
-    MSG_END,
-    MSG_TICK,
-    MSG_DRAW,
-    MSG_CLICK,
-    MSG_KEY,
-    MSG_CHAR,
-    MSG_RADIO,
-    MSG_WANTFOCUS,
-    MSG_GETFOCUS,
-    MSG_LOSEFOCUS,
-    MSG_CHANGE,
+    UM_START,
+    UM_END,
+    UM_TICK,
+    UM_DRAW,
+    UM_CLICK,
+    UM_KEY,
+    UM_CHAR,
+    UM_RADIO,
+    UM_WANTFOCUS,
+    UM_GETFOCUS,
+    UM_LOSEFOCUS,
+    UM_CHANGE,
 } uMessage;
 
 typedef enum {
-    W_OK,
-    W_CLOSE,
-    W_HANDLED,
-    W_DIRTY,
-    W_WANTFOCUS,
-    W_UNFOCUS,
-    W_UNFOCUS_PREV,
+    UW_OK,
+    UW_CLOSE,
+    UW_HANDLED,
+    UW_DIRTY,
+    UW_WANTFOCUS,
+    UW_UNFOCUS,
+    UW_UNFOCUS_PREV,
 } uResponse;
 
 typedef enum {
@@ -46,9 +46,9 @@ typedef enum {
     UK_DELETE,
 } uKeyCode;
 
-#define FLAG_DIRTY 1
-#define FLAG_FOCUS 2
-#define FLAG_HIDDEN 4
+#define UF_DIRTY 1
+#define UF_FOCUS 2
+#define UF_HIDDEN 4
 
 struct uWidget;
 typedef int (*ugi_widget_fun)(struct uWidget *, int msg, int param);
@@ -143,15 +143,13 @@ int uw_menubar(uWidget *W, int msg, int param);
 int uw_label(uWidget *W, int msg, int param);
 int uw_clabel(uWidget *W, int msg, int param);
 int uw_button(uWidget *W, int msg, int param);
-int uw_icon(uWidget *W, int msg, int param);
 int uw_checkbox(uWidget *W, int msg, int param);
 int uw_radio(uWidget *W, int msg, int param);
 int uw_slider(uWidget *W, int msg, int param);
-int uw_dial(uWidget *W, int msg, int param);
 int uw_text_input(uWidget *W, int msg, int param);
+int uw_text_area(uWidget *W, int msg, int param);
 int uw_listbox(uWidget *W, int msg, int param);
 int uw_combo(uWidget *W, int msg, int param);
-int uw_textbox(uWidget *W, int msg, int param);
 int uw_ticker(uWidget *W, int msg, int param);
 int uw_timer(uWidget *W, int msg, int param);
 
@@ -167,12 +165,8 @@ void ugi_repaint_all();
 int ugi_menu_popup(uMenu *m, int x, int y, void *udata);
 int ugi_menu_popup_ex(uMenu *m, int x, int y, int width, int lines, void *udata);
 
-int ud_get_key_state(uKeyCode code);
-
-int ud_text_width(void *font, const char *text);
-
-int ud_text_height(void *font, const char *text);
-
+/* Functions for which the user of the library needs to provide
+platform specific drawing functions */
 void ud_set_color(unsigned int color);
 
 void ud_set_font(void *font);
@@ -187,8 +181,12 @@ void ud_dither_box(int x0, int y0, int x1, int y1);
 
 void ud_line(int x0, int y0, int x1, int y1);
 
-void ud_circle(int x0, int y0, int r);
-
 void ud_text(int x, int y, const char *text);
 
 void ud_clip(int x0, int y0, int x1, int y1);
+
+int ud_get_key_state(uKeyCode code);
+
+int ud_text_width(void *font, const char *text);
+
+int ud_text_height(void *font, const char *text);

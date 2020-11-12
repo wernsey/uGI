@@ -21,7 +21,7 @@ else
   LDFLAGS += -s
 endif
 
-SOURCES= main.c bmp.c ugi.c
+SOURCES= main.c bmp.c ugi.c ugiSDL.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: $(EXECUTABLE)
