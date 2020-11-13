@@ -17,6 +17,34 @@ unsigned int ugc_foreground = 0x7869C4;
 
 void *ugi_font = NULL;
 
+typedef struct {
+    char *key, *val;
+} uAttr;
+
+struct uWidget {
+    ugi_widget_fun fun;
+    int x, y, w, h;
+
+    unsigned int flags;
+
+    void *font;
+
+    int aa, n;
+    uAttr *attrs;
+
+    void *action;
+    void *data;
+
+    struct uDialog *D;
+    int idx;
+
+};
+
+struct uDialog {
+    int aa, n;
+    uWidget *widgets;
+};
+
 static void unclip() {
     ud_clip(0,0, ugi_screen_width, ugi_screen_height);
 }
@@ -90,6 +118,18 @@ int uu_get_attr_i(uWidget *W, const char *key) {
     const char *sval = uu_get_attr(W, key);
     if(sval) return atoi(sval);
     return 0;
+}
+
+void uu_set_flag(uWidget *W, unsigned int flag) {
+    W->flags |= flag;
+}
+
+void uu_clear_flag(uWidget *W, unsigned int flag) {
+    W->flags &= ~flag;
+}
+
+int uu_get_flag(uWidget *W, unsigned int flag) {
+    return !!(W->flags & flag);
 }
 
 void uu_set_data(uWidget *W, void *val) {

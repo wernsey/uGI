@@ -60,28 +60,7 @@ typedef const char *(*ugi_widget_list_fun)(struct uWidget *W, int i, int *size);
 struct uMenu;
 typedef void (*ugi_menu_action)(struct uMenu *, void *udata);
 
-typedef struct {
-    char *key, *val;
-} uAttr;
-
-typedef struct uWidget {
-    ugi_widget_fun fun;
-    int x, y, w, h;
-
-    int flags;
-
-    void *font;
-
-    int aa, n;
-    uAttr *attrs;
-
-    void *action;
-    void *data;
-
-    struct uDialog *D;
-    int idx;
-
-} uWidget;
+typedef struct uWidget uWidget;
 
 typedef struct uMenu {
     const char *title;
@@ -90,10 +69,7 @@ typedef struct uMenu {
     void *data;
 } uMenu;
 
-typedef struct uDialog {
-    int aa, n;
-    uWidget *widgets;
-} uDialog;
+typedef struct uDialog uDialog;
 
 extern unsigned int ugi_screen_width;
 extern unsigned int ugi_screen_height;
@@ -115,6 +91,10 @@ void uu_set_attr(uWidget *W, const char *key, const char *val);
 
 void uu_set_attr_i(uWidget *W, const char *key, int val);
 int uu_get_attr_i(uWidget *W, const char *key);
+
+void uu_set_flag(uWidget *W, unsigned int flag);
+void uu_clear_flag(uWidget *W, unsigned int flag);
+int uu_get_flag(uWidget *W, unsigned int flag);
 
 void uu_set_data(uWidget *W, void *val);
 void *uu_get_data(uWidget *W);

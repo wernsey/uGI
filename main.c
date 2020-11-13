@@ -125,7 +125,7 @@ void show_popup(uMenu *menu, void *data) {
 
     W = ugi_add(popup, uw_button, (SCREEN_WIDTH)/2, SCREEN_HEIGHT - 20 - 10 - 3, (SCREEN_WIDTH - 40)/2 - 3, 10);
     uu_set_attr(W, "label", "Click Me");
-    W->flags |= UF_FOCUS;
+    uu_set_flag(W, UF_FOCUS); //W->flags |= UF_FOCUS;
 }
 
 const char *test_list(uWidget *W, int i, int *size) {
@@ -230,7 +230,7 @@ void init_gui() {
     W = ugi_add(D, uw_radio,  4, 70, SCREEN_WIDTH/2 - 8, 10);
     uu_set_attr(W, "label", "Radio 1C");
     uu_set_attr_i(W, "group", 1);
-    W->flags |= UF_HIDDEN;
+    uu_set_flag(W, UF_HIDDEN);
 
     W = ugi_add(D, uw_radio,  SCREEN_WIDTH/2 + 4, 46, SCREEN_WIDTH/2 - 8, 10);
     uu_set_attr(W, "label", "Radio 2A");
