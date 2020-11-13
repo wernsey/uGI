@@ -71,6 +71,10 @@ typedef struct uMenu {
 
 typedef struct uDialog uDialog;
 
+typedef struct {
+    int x, y, w, h;
+} uRect;
+
 extern unsigned int ugi_screen_width;
 extern unsigned int ugi_screen_height;
 
@@ -86,6 +90,8 @@ int (*u_text_height)(void *font, const char *text);
 int (*u_get_key_state)(uKeyCode code);
 
 /* Utility functions, prefixed with uu_ */
+uRect uu_get_position(uWidget *W);
+
 const char *uu_get_attr(uWidget *W, const char *key);
 void uu_set_attr(uWidget *W, const char *key, const char *val);
 

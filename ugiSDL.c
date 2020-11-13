@@ -145,14 +145,13 @@ int ugisdl_process_event(SDL_Event *e) {
     return 0;
 }
 
-
-
 int usw_dial(uWidget *W, int msg, int param) {
 
-    ugi_widget_action cb = W->action;
+    uRect pos = uu_get_position(W);
+    ugi_widget_action cb = uu_get_action(W);
 
     if(msg == UM_START) {
-        int r = (W->w < W->h ? W->w : W->h)/2 - 5;
+        int r = (pos.w < pos.h ? pos.w : pos.h)/2 - 5;
         uu_set_attr_i(W, "radius", r);
         uu_set_attr_i(W, "value", 0);
         uu_set_attr_i(W, "minimum", 0);
@@ -160,18 +159,17 @@ int usw_dial(uWidget *W, int msg, int param) {
     } else if(msg == UM_DRAW) {
         unsigned int bg, fg;
         uu_get_color_attrs(W, &bg, &fg);
-        ud_set_font(W->font);
+        ud_set_font(uu_get_font(W));
 
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(W->flags & UF_FOCUS)
+        if(uu_get_flag(W, UF_FOCUS))
             uu_highlight_widget(W);
-        //bm_rect(ugi_screen, W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
         int x0, y0, r = uu_get_attr_i(W, "radius");
-        x0 = W->x + W->w / 2;
-        y0 = W->y + W->h / 2;
+        x0 = pos.x + pos.w / 2;
+        y0 = pos.y + pos.h / 2;
 
         bm_circle(screen, x0, y0, r);
 
@@ -195,8 +193,8 @@ int usw_dial(uWidget *W, int msg, int param) {
      } else if(msg == UM_CLICK) {
         int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
         int x0, y0;
-        x0 = W->x + W->w / 2;
-        y0 = W->y + W->h / 2;
+        x0 = pos.x + pos.w / 2;
+        y0 = pos.y + pos.h / 2;
         int dx = mx - x0;
         int dy = my - y0;
 
@@ -269,14 +267,15 @@ int usw_dial(uWidget *W, int msg, int param) {
 }
 
 int usw_icon(uWidget *W, int msg, int param) {
-    //return 0;
+    uRect pos = uu_get_position(W);
+
     if(msg == UM_DRAW) {
-        Bitmap *b = W->data;
+        Bitmap *b = uu_get_data(W);
         if(!b) {
             unsigned int fg;
             uu_get_color_attrs(W, NULL, &fg);
             ud_set_color(fg);
-            ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+            ud_box(pos.x, pos.y, pos.x + pos.w, pos.y + pos.h);
         }
         int mask = uu_get_attr_i(W, "mask");
         int src_x = uu_get_attr_i(W, "src_x");
@@ -285,7 +284,7 @@ int usw_icon(uWidget *W, int msg, int param) {
         int src_h = uu_get_attr_i(W, "src_h");
         if(!src_w) src_w = bm_width(b);
         if(!src_h) src_h = bm_height(b);
-        bm_blit_ex(screen, W->x, W->y, W->w, W->h, b, src_x, src_y, src_w, src_h, mask);
+        bm_blit_ex(screen, pos.x, pos.y, pos.w, pos.h, b, src_x, src_y, src_w, src_h, mask);
         return UW_OK;
     }
     return uw_button(W, msg, param);
