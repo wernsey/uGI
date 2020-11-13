@@ -120,6 +120,10 @@ void uu_clear_widget(uWidget *W, unsigned int bg);
 void uu_highlight_box(int x0, int y0, int x1, int y1);
 void uu_highlight_widget(uWidget *W);
 
+void uu_unclip();
+
+void uu_printf(int x, int y, const char *fmt, ...);
+
 /* Widget functions, prefixed with uw */
 int uw_clear(uWidget *W, int msg, int param);
 int uw_clear_dith(uWidget *W, int msg, int param);

@@ -1,8 +1,11 @@
 .gdbinit
 *.o
-*.zip
+*.d
+
 ugi
 *.exe
+
 doc
+*.zip
 .vscode
 screen.gif

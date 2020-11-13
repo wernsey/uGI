@@ -46,11 +46,11 @@ struct uDialog {
     uWidget *widgets;
 };
 
-static void unclip() {
+void uu_unclip() {
     ud_clip(0,0, ugi_screen_width, ugi_screen_height);
 }
 
-static void uprintf(int x, int y, const char *fmt, ...) {
+void uu_printf(int x, int y, const char *fmt, ...) {
     char buffer[256];
     va_list arg;
     va_start(arg, fmt);
@@ -556,13 +556,13 @@ int uw_slider(uWidget *W, int msg, int param) {
         ud_text(W->x + W->w - (cw + 2), W->y + 1, "+");
 
         if(val < 10)
-            uprintf(W->x + (W->w - 1*cw)/2, W->y + 8, "%d", val);
+            uu_printf(W->x + (W->w - 1*cw)/2, W->y + 8, "%d", val);
         else if(val < 100)
-            uprintf(W->x + (W->w - 2*cw)/2, W->y + 8, "%d", val);
+            uu_printf(W->x + (W->w - 2*cw)/2, W->y + 8, "%d", val);
         else if(val < 1000)
-            uprintf(W->x + (W->w - 3*cw)/2, W->y + 8, "%d", val);
+            uu_printf(W->x + (W->w - 3*cw)/2, W->y + 8, "%d", val);
         else
-            uprintf(W->x + (W->w - 4*cw)/2, W->y + 8, "%d", val);
+            uu_printf(W->x + (W->w - 4*cw)/2, W->y + 8, "%d", val);
 
     } else if(msg == UM_CLICK) {
         int cw = ud_text_width(W->font, " ");
@@ -693,7 +693,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
         if(blink && uu_get_flag(W, UF_FOCUS)) {
             ud_fill_box(W->x + cursor*cw + 2, W->y, W->x + cursor*cw + 4, W->y + W->h - 1);
         }
-        unclip();
+        uu_unclip();
     } else if(msg == UM_CLICK) {
         int mx = (param >> 16) & 0xFFFF;
         int cursor = (mx - W->x - 2)/cw;
@@ -878,7 +878,7 @@ int uw_listbox(uWidget *W, int msg, int param) {
         }
         ud_set_color(fg);
         draw_scrollbar(W->x + W->w - 6, W->y + 1, 6, W->h, scroll, n, ch + 2);
-        unclip();
+        uu_unclip();
 
     } else if(msg == UM_CLICK) {
         int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
@@ -1078,7 +1078,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
                 if(y > W->y + W->h) break;
             } else if(text[i] == '\r') {
             } else {
-                uprintf(x, y, "%c", text[i]);
+                uu_printf(x, y, "%c", text[i]);
                 x += cw;
             }
             i++;
@@ -1088,7 +1088,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
             ud_fill_box(x, y - 2, x+2, y + 8);
         }
         draw_scrollbar(W->x + W->w - 6, W->y + 1, 6, W->h, scroll, n, ch + 2);
-        unclip();
+        uu_unclip();
 
     } else if(msg == UM_CLICK) {
 
@@ -1297,7 +1297,7 @@ int uw_ticker(uWidget *W, int msg, int param) {
 
         ud_set_color(fg);
         ud_set_font(W->font);
-        uprintf(W->x, W->y, "%c", seq[index % strlen(seq)]);
+        uu_printf(W->x, W->y, "%c", seq[index % strlen(seq)]);
     } else if(msg == UM_TICK) {
         int elapsed = uu_get_attr_i(W, "time") + param;
         uu_set_attr_i(W, "time", elapsed);
