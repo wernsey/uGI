@@ -63,13 +63,13 @@ void ud_box(int x0, int y0, int x1, int y1) {
 
 void ud_highlight_box(int x0, int y0, int x1, int y1) {
     int x, y;
-    for(x = x0; x < x1; x += 2) {
+    for(x = x0; x <= x1; x += 2) {
         bm_putpixel(screen, x, y0);
-        bm_putpixel(screen, x, y1-1);
+        bm_putpixel(screen, x, y1);
     }
-    for(y = y0; y < y1; y += 2) {
+    for(y = y0; y <= y1; y += 2) {
         bm_putpixel(screen, x0, y);
-        bm_putpixel(screen, x1-1, y);
+        bm_putpixel(screen, x1, y);
     }
 }
 
@@ -185,10 +185,10 @@ int usw_dial(uWidget *W, int msg, int param) {
 
         y1 = sin((30 + 90) * M_PI/180) * (r + 5);
         x1 = cos((30 + 90) * M_PI/180) * (r + 5);
-        ud_box(x0 + x1, y0 + y1, x0 + x1 + 1, y0 + y1 + 1);
+        ud_box(x0 + x1, y0 + y1, x0 + x1, y0 + y1);
         y1 = sin((330 + 90) * M_PI/180) * (r + 5);
         x1 = cos((330 + 90) * M_PI/180) * (r + 5);
-        ud_box(x0 + x1, y0 + y1, x0 + x1 + 1, y0 + y1 + 1);
+        ud_box(x0 + x1, y0 + y1, x0 + x1, y0 + y1);
 
      } else if(msg == UM_CLICK) {
         int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
@@ -275,7 +275,7 @@ int usw_icon(uWidget *W, int msg, int param) {
             unsigned int fg;
             uu_get_color_attrs(W, NULL, &fg);
             ud_set_color(fg);
-            ud_box(pos.x, pos.y, pos.x + pos.w, pos.y + pos.h);
+            ud_box(pos.x, pos.y, pos.x + pos.w - 1, pos.y + pos.h - 1);
         }
         int mask = uu_get_attr_i(W, "mask");
         int src_x = uu_get_attr_i(W, "src_x");

@@ -226,7 +226,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
         if(uu_get_flag(W, UF_FOCUS))
             uu_highlight_widget(W);
 
-        ud_box(pos.x, pos.y, pos.x + pos.w, pos.y + pos.h);
+        ud_box(pos.x, pos.y, pos.x + pos.w - 1, pos.y + pos.h - 1);
 
 
     } else if(msg == UM_CLICK) {

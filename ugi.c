@@ -60,7 +60,7 @@ void uu_printf(int x, int y, const char *fmt, ...) {
 }
 
 void uu_highlight_widget(uWidget *W) {
-    ud_highlight_box(W->x-1, W->y-1, W->x + W->w + 1, W->y + W->h + 1);
+    ud_highlight_box(W->x-1, W->y-1, W->x + W->w, W->y + W->h);
 }
 
 void uu_clear_widget(uWidget *W, unsigned int bg) {
@@ -209,7 +209,7 @@ int uw_clear(uWidget *W, int msg, int param) {
         uu_get_color_attrs(W, &bg, NULL);
 
         ud_set_color(bg);
-        ud_box(0, 0, ugi_screen_width, ugi_screen_height);
+        ud_box(0, 0, ugi_screen_width - 1, ugi_screen_height - 1);
     }
     return UW_OK;
 }
@@ -239,13 +239,13 @@ int uw_frame(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+        ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
-        ud_box(W->x, W->y, W->x + W->w, W->y + 11);
+        ud_box(W->x, W->y, W->x + W->w - 1, W->y + 10);
 
         // Close button
         x = W->x + W->w - 11;
-        ud_box(x + 3, W->y + 3, x + 10 - 2, W->y + 10 - 2);
+        ud_box(x + 3, W->y + 3, x + 10 - 3, W->y + 10 - 3);
 
         const char *lbl = uu_get_attr(W, "label");
         if(lbl) {
@@ -278,7 +278,7 @@ int uw_box(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+        ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
     }
     return UW_OK;
 }
@@ -377,7 +377,7 @@ int uw_button(uWidget *W, int msg, int param) {
             uu_highlight_widget(W);
 
         if(uu_get_attr_i(W, "border"))
-            ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+            ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
         const char *lbl = uu_get_attr(W, "label");
         if(lbl) {
@@ -441,7 +441,7 @@ int uw_checkbox(uWidget *W, int msg, int param) {
 
         int y = W->y + (W->h - 10)/2;
 
-        ud_box(W->x, y, W->x + 10, y + 10);
+        ud_box(W->x, y, W->x + 10 - 1, y + 10 - 1);
         if(value)
             ud_fill_box(W->x + 2, y + 2, W->x + 10 - 3, y + 10 - 3);
 
@@ -548,7 +548,7 @@ int uw_slider(uWidget *W, int msg, int param) {
         if(uu_get_flag(W, UF_FOCUS))
             uu_highlight_widget(W);
 
-        ud_box(W->x + (cw + 4), W->y + 3, W->x + W->w - (cw + 4), W->y + 6);
+        ud_box(W->x + (cw + 4), W->y + 3, W->x + W->w - (cw + 4) - 1, W->y + 5);
 
         ud_fill_box(x-2, W->y + 1, x+2, W->y + 7);
 
@@ -682,7 +682,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
         const char *text = uu_get_attr(W, "text");
         int cursor = uu_get_attr_i(W, "cursor");
 
-        ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+        ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
         ud_clip(W->x, W->y, W->x + W->w, W->y + W->h);
         int y = W->y + (W->h - ch) / 2;
@@ -855,7 +855,7 @@ int uw_listbox(uWidget *W, int msg, int param) {
         if(uu_get_flag(W, UF_FOCUS))
             uu_highlight_widget(W);
 
-        ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+        ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
         int i, n, y;
 
@@ -965,7 +965,7 @@ int uw_combo(uWidget *W, int msg, int param) {
         if(uu_get_flag(W, UF_FOCUS))
             uu_highlight_widget(W);
 
-        ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+        ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
         const char *val = uu_get_attr(W, "value");
         if(val) {
@@ -1052,7 +1052,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         ud_set_color(fg);
         if(uu_get_flag(W, UF_FOCUS))
             uu_highlight_widget(W);
-        ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
+        ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
         n = uu_count_lines(text);
 
