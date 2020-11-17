@@ -5,7 +5,6 @@
 ugi
 *.exe
 
-doc
 *.zip
 .vscode
-screen.gif
+./screen.gif
