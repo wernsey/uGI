@@ -84,11 +84,6 @@ extern void *ugi_font;
 extern unsigned int ugc_background;
 extern unsigned int ugc_foreground;
 
-int (*u_text_width)(void *font, const char *text);
-int (*u_text_height)(void *font, const char *text);
-
-int (*u_get_key_state)(uKeyCode code);
-
 /* Utility functions, prefixed with uu_ */
 uRect uu_get_position(uWidget *W);
 
