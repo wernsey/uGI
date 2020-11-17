@@ -41,29 +41,6 @@ static unsigned int palette[] = {
     0x9F9F9F, // 15 - light grey
 };
 
-/* I'm not really fond of the idea that these duplicate functions
-from ugi.c, but such is life */
-static int count_lines(const char *text) {
-    int line = 1;
-    while(text && *text) {
-        if(text[0] == '\n')
-            line++;
-        text++;
-    }
-    return line;
-}
-static int start_of_line(const char *text, int line) {
-    int n = 0, i;
-    if(line == 0) return 0;
-    for(i = 0; text[i]; i++) {
-        if(text[i] == '\n') {
-            n++;
-            if(n == line) return i+1;
-        }
-    }
-    return 0;
-}
-
 static const char *keywords[] = {
     /* C Keywords: http://www.c4learn.com/c-programming/c-keywords/ */
     "auto", "double", "int", "struct",
@@ -176,7 +153,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
 
         uu_clear_widget(W, bg);
 
-        n = count_lines(text);
+        n = uu_count_lines(text);
 
         int line = 0;
         for(i = 0; text[i] && line != scroll; i++) {
@@ -216,7 +193,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
                 x += cw;
             }
             if(uu_get_flag(W,UF_FOCUS) && i == cursor && blink) {
-                ud_line(cx, cy - 2, cx, cy + 6);
+                ud_fill_box(x, y - 2, x+2, y + 8);
             }
             i++;
         }
@@ -227,18 +204,10 @@ int uw_richedit(uWidget *W, int msg, int param) {
         ud_set_color(fg);
         if(uu_get_flag(W,UF_FOCUS) && i == cursor && blink) {
             // Cursor at end of text
-            ud_line(x, y - 2, x, y + 6);
+            ud_fill_box(x, y - 2, x+2, y + 8);
         }
 
-        /*
-        for(y = W->y + 1; y < W->y + W->h - 1; y++) {
-            for(x = W->x + W->w - 6; x < W->x + W->w - 1; x++) {
-                if((x + y) & 1)
-                    bm_putpixel(ugi_screen, x, y);
-            }
-        }
-        */
-       ud_dither_box(pos.x + pos.w - 6, pos.y + 1, pos.x + pos.w, pos.y + pos.h);
+        ud_dither_box(pos.x + pos.w - 6, pos.y + 1, pos.x + pos.w, pos.y + pos.h);
 
         int nlf = pos.h/(ch + 2) - 1;
         if(nlf < n) {
@@ -268,7 +237,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
         const char *text = uu_get_attr(W, "text");
         if(!text) text = "";
         int n;
-        n = count_lines(text);
+        n = uu_count_lines(text);
 
         int x = pos.x + pos.w - 6 - 1;
         if(mx > x) {
@@ -295,7 +264,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
         } else {
             int y = (my - pos.y)/(ch + 2) + scroll;
             if(y >= n) y = n - 1;
-            int i = start_of_line(text, y);
+            int i = uu_start_of_line(text, y);
             x = (mx - pos.x - 2)/cw;
             while(x > 0 && text[i]) {
                 char c = text[i];
@@ -318,7 +287,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
         assert(text);
 
         len = strlen(text);
-        int n = count_lines(text);
+        int n = uu_count_lines(text);
 
         /* Where is the cursor? */
         cursor = uu_get_attr_i(W, "cursor");
@@ -339,28 +308,28 @@ int uw_richedit(uWidget *W, int msg, int param) {
                 case UK_UP:
                     line--;
                     if(line < 0) line = 0;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
                 case UK_DOWN:
                     line++;
                     if(line > n - 1) line = n - 1;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
                 case UK_PAGEUP:
                     line -= pos.h / (ch + 2) - 2;
                     if(line < 0) line = 0;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
                 case UK_PAGEDOWN:
                     line += pos.h / (ch + 2) - 2;
                     if(line > n - 1) line = n - 1;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
@@ -373,11 +342,11 @@ int uw_richedit(uWidget *W, int msg, int param) {
                         uu_set_attr_i(W, "cursor", cursor + 1);
                 break;
                 case UK_HOME:
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     uu_set_attr_i(W, "cursor", cursor);
                     break;
                 case UK_END:
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(; text[cursor] && text[cursor] != '\n'; cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                     break;

@@ -1000,7 +1000,7 @@ void uu_combo_menu_action(struct uMenu *menu, void *udata) {
     }
 }
 
-static int count_lines(const char *text) {
+int uu_count_lines(const char *text) {
     int line = 1;
     while(text && *text) {
         if(text[0] == '\n')
@@ -1009,7 +1009,8 @@ static int count_lines(const char *text) {
     }
     return line;
 }
-static int start_of_line(const char *text, int line) {
+
+int uu_start_of_line(const char *text, int line) {
     int n = 0, i;
     if(line == 0) return 0;
     for(i = 0; text[i]; i++) {
@@ -1053,7 +1054,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
             uu_highlight_widget(W);
         ud_box(W->x, W->y, W->x + W->w, W->y + W->h);
 
-        n = count_lines(text);
+        n = uu_count_lines(text);
 
         int line = 0;
         for(i = 0; text[i] && line != scroll; i++) {
@@ -1098,7 +1099,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         const char *text = uu_get_attr(W, "text");
         if(!text) text = "";
         int n;
-        n = count_lines(text);
+        n = uu_count_lines(text);
 
         int x = W->x + W->w - 6 - 1;
         if(mx > x) {
@@ -1109,7 +1110,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         } else {
             int y = (my - W->y)/(ch + 2) + scroll;
             if(y >= n) y = n - 1;
-            int i = start_of_line(text, y);
+            int i = uu_start_of_line(text, y);
             x = (mx - W->x - 2)/cw;
             while(x > 0 && text[i]) {
                 char c = text[i];
@@ -1132,7 +1133,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         assert(text);
 
         len = strlen(text);
-        int n = count_lines(text);
+        int n = uu_count_lines(text);
 
         /* Where is the cursor? */
         cursor = uu_get_attr_i(W, "cursor");
@@ -1154,38 +1155,38 @@ int uw_text_area(uWidget *W, int msg, int param) {
                 case UK_UP:
                     line--;
                     if(line < 0) line = 0;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
                 case UK_DOWN:
                     line++;
                     if(line > n - 1) line = n - 1;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
                 case UK_PAGEUP:
                     line -= W->h / (ch + 2) - 2;
                     if(line < 0) line = 0;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
                 case UK_PAGEDOWN:
                     line += W->h / (ch + 2) - 2;
                     if(line > n - 1) line = n - 1;
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(i = 0; i < col && text[cursor] && text[cursor] != '\n'; i++, cursor++);
                     uu_set_attr_i(W, "cursor", cursor);
                 break;
                 case UK_LEFT: if(cursor > 0) uu_set_attr_i(W, "cursor", cursor - 1); break;
                 case UK_RIGHT: if(cursor < len) uu_set_attr_i(W, "cursor", cursor + 1); break;
                 case UK_HOME:
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     uu_set_attr_i(W, "cursor", cursor); break;
                 case UK_END:
-                    cursor = start_of_line(text, line);
+                    cursor = uu_start_of_line(text, line);
                     for(; text[cursor] && text[cursor] != '\n'; cursor++);
                     uu_set_attr_i(W, "cursor", cursor); break;
                 case UK_DELETE: {

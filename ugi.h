@@ -120,6 +120,10 @@ void uu_clear_widget(uWidget *W, unsigned int bg);
 void uu_highlight_box(int x0, int y0, int x1, int y1);
 void uu_highlight_widget(uWidget *W);
 
+int uu_count_lines(const char *text);
+
+int uu_start_of_line(const char *text, int line);
+
 void uu_unclip();
 
 void uu_printf(int x, int y, const char *fmt, ...);
