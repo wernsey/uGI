@@ -171,7 +171,6 @@ int uw_richedit(uWidget *W, int msg, int param) {
 
         ud_clip(pos.x, pos.y, pos.x + pos.w, pos.y + pos.h);
         while(i < len && text[i]) {
-            int cx = x, cy = y;
             if(text[i] == '\n') {
                 x = pos.x + 2;
                 y += ch + 2;

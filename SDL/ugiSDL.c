@@ -1,8 +1,8 @@
-#include "SDL.h"
+#include <SDL.h>
 
-#include "ugi.h"
+#include "../ugi.h"
 
-#include "bmp.h"
+#include "../other/bmp.h"
 
 Bitmap *screen = NULL;
 

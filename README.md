@@ -2,11 +2,13 @@
 
 micro Graphical Interface
 
-A small C library to create graphical user interfaces (GUI).
-
-![screenshot](doc/screen.gif)
-
 ## About The Project
+
+uGI is a small, portable C library to create graphical user interfaces in applications.
+
+![screenshot 1](doc/screen.gif) ![screenshot 2](doc/richedit.gif)
+
+The core of the library is written in a platform independent and portable manner. It relies on user provided functions to do the actual drawing on the screen and the handling of user input events. Example implementations of these functions is provided for [SDL][].
 
 ## Getting Started
 
@@ -61,6 +63,12 @@ This diagram shows the various aspects of uGI applications:
     +-------------------------------+
 ```
 
+* The GUI Application is the application that is using uGI to draw its graphical user interface
+* The uGI Library is the code in ugi.c and ugi.h. They provide the framework for getting widgets onto the screen and managing interactions with them
+* The Driver Program is responsible for connecting the uGI library with the underlying operating system. If uGI want's to draw a widget it calls functions provided by the driver program to put the actual pixels on the screen. Similarly, if the user clicks or presses a button, it is the driver program's responsibility to get that event from the
+  * The `SDL/` directory provides such a Driver Program on top of [SDL][].
+  * It is possible to write driver programs for other operating systems or frameworks
+
 ### GUI Application
 
 The GUI Application is your application that is using uGI to create and manage a graphical user interface.
@@ -95,6 +103,10 @@ Depending on the widget, it may also need an _action callback_ function that con
 
 The `button_callback` function in this example must match the `ugi_widget_action` prototype, and will be called when the button is clicked.
 
+### uGI Library
+
+The uGI library handles events received from the operating system and uses them to draw the widgets or otherwise interact with them. uGI will call specific `ud_` functions to draw the widgets onto the screen.
+
 ### Driver Program
 
 You must first provide a platform dependent driver program that sits between the uGI library and the operating system.
@@ -105,16 +117,19 @@ The driver program must also receive events from the operating system and pass t
 
 #### Example
 
-The files `sdlmain.c` and `ugiSDL.c` provides a simple example of such a driver program built on top of the [SDL][] library:
+The files `SDL/sdlmain.c` and `SDL/ugiSDL.c` provides a simple example of such a driver program built on top of the [SDL][] library:
 
-* `ugiSDL.c` provides the implementation of all the `ud_` functions.
+* `SDL/ugiSDL.c` provides the implementation of all the `ud_` functions.
 * It also provides along with a function called `ugisdl_process_event()` that processes SDL events and pass them on to uGI.
-* `sdlmain.c` provides a `main()` function that will create a uGI user interface initialise the GUI and run the event loop.
-* This particular driver program uses my [bitmap][] module as a framebuffer to draw the graphics to, but you can use any graphics library to draw to the screen.
+* `SDL/sdlmain.c` provides a `main()` function that will create a uGI user interface initialise the GUI and run the event loop.
+* This particular driver program uses my [bitmap][] module to draw the graphics onto a SDL Texture for convenience, but in principle any graphics framework can be used.
 
-### uGI Library
+The SDL driver program also provides two separate widgets, `usw_dial` and `usw_icon` that demonstrates how to implement custom widgets:
 
-The uGI library handles events received from the operating system and uses them to draw the widgets or otherwise interact with them. uGI will call specific `ud_` functions to draw the widgets onto the screen.
+* The `usw_dial` draws a circle
+* The `usw_icon` draws a bitmap graphic on the screen
+
+Both of these widgets uses graphics functionality outside of the `ud_` drawing functions in uGI, so they are not as portable, but they serve as an example of how uGI can be customized.
 
 [SDL]: https://www.libsdl.org/
 [bitmap]: https://github.com/wernsey/bitmap

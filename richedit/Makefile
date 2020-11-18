@@ -21,7 +21,7 @@ else
   LDFLAGS += -s
 endif
 
-SOURCES=test.c richedit.c ../sdlmain.c ../bmp.c ../ugi.c ../ugiSDL.c
+SOURCES=test.c richedit.c ../ugi.c ../SDL/sdlmain.c ../SDL/ugiSDL.c ../other/bmp.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: $(EXECUTABLE)
@@ -35,12 +35,12 @@ $(EXECUTABLE): $(OBJECTS)
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-../bmp.o: ../bmp.c ../bmp.h
-../sdlmain.o: ../sdlmain.c ../ugi.h ../bmp.h ../ugiSDL.h ../sdlmain.h
-../ugi.o: ../ugi.c ../ugi.h
-../ugiSDL.o: ../ugiSDL.c ../ugi.h ../bmp.h
 richedit.o: richedit.c richedit.h ../ugi.h
-test.o: test.c ../ugi.h ../bmp.h ../ugiSDL.h ../sdlmain.h ../bold.xbm
+test.o: test.c ../ugi.h ../other/bmp.h ../SDL/ugiSDL.h ../SDL/sdlmain.h ../other/bold.xbm
+../ugi.o: ../ugi.c ../ugi.h
+../SDL/ugiSDL.o: ../SDL/ugiSDL.c ../ugi.h ../other/bmp.h
+../SDL/sdlmain.o: ../SDL/sdlmain.c ../ugi.h ../SDL/ugiSDL.h ../SDL/sdlmain.h ../other/bmp.h
+../other/bmp.o: ../other/bmp.c ../other/bmp.h
 
 
 .PHONY : clean

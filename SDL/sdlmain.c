@@ -1,11 +1,11 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include "SDL.h"
+#include <SDL.h>
 
-#include "ugi.h"
+#include "../ugi.h"
 
-#include "bmp.h"
+#include "../other/bmp.h"
 
 #include "ugiSDL.h"
 #include "sdlmain.h"
@@ -43,11 +43,14 @@ int main(int argc, char *argv[]) {
     ugi_screen_width = SCREEN_WIDTH;
     ugi_screen_height = SCREEN_HEIGHT;
 
-    init_gui();
+    int done = 0;
+
+    if(!init_gui()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GUI init failed");
+        done = 1;
+    }
 
     Uint32 start = SDL_GetTicks();
-
-    int done = 0;
     while(!done) {
         Uint32 elapsed = SDL_GetTicks() - start;
         if(elapsed == 0) {

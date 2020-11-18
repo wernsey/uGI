@@ -21,7 +21,7 @@ else
   LDFLAGS += -s
 endif
 
-SOURCES= demo.c sdlmain.c bmp.c ugi.c ugiSDL.c
+SOURCES= demo.c ugi.c SDL/sdlmain.c SDL/ugiSDL.c other/bmp.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: $(EXECUTABLE)
@@ -35,14 +35,14 @@ $(EXECUTABLE): $(OBJECTS)
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-bmp.o: bmp.c bmp.h
-demo.o: demo.c ugi.h bmp.h ugiSDL.h sdlmain.h bold.xbm
-sdlmain.o: sdlmain.c ugi.h bmp.h ugiSDL.h sdlmain.h
 ugi.o: ugi.c ugi.h
-ugiSDL.o: ugiSDL.c ugi.h bmp.h
+demo.o: demo.c ugi.h other/bmp.h SDL/ugiSDL.h SDL/sdlmain.h other/bold.xbm
+SDL/ugiSDL.o: SDL/ugiSDL.c ugi.h other/bmp.h
+SDL/sdlmain.o: SDL/sdlmain.c ugi.h other/bmp.h SDL/ugiSDL.h SDL/sdlmain.h
+other/bmp.o: other/bmp.c other/bmp.h
 
 .PHONY : clean
 
 clean:
 	-rm -f $(EXECUTABLE)
-	-rm -f *.o
+	-rm -f *.o SDL/*.o other/*.o

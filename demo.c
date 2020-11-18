@@ -1,15 +1,15 @@
 #include <assert.h>
 
-#include "SDL.h"
+#include <SDL.h>
 
 #include "ugi.h"
 
-#include "bmp.h"
+#include "other/bmp.h"
 
-#include "ugiSDL.h"
-#include "sdlmain.h"
+#include "SDL/ugiSDL.h"
+#include "SDL/sdlmain.h"
 
-#include "bold.xbm"
+#include "other/bold.xbm"
 
 Bitmap *icon;
 
@@ -103,19 +103,21 @@ uMenu combomenu[] = {
     {NULL, NULL, NULL, NULL},
 };
 
-void init_gui() {
+int init_gui() {
 
     // ugi_font = bm_get_font(screen);
     ugi_font = bm_make_xbm_font(bold_bits, 7);
 
-    icon = bm_load("tile.gif");
+    icon = bm_load("other/tile.gif");
+    if(!icon)
+        return 0;
 
     uDialog *D = ugi_start();
     uWidget *W;
 
     W = ugi_add(D, uw_clear, 0, 0, 0, 0);
     W = ugi_add(D, uw_frame, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    uu_set_attr(W, "label", "Window Title");
+    uu_set_attr(W, "label", "uGI Demo");
 
     W = ugi_add(D, uw_menubar, 0, 10, SCREEN_WIDTH, 0);
     uu_set_data(W, mainmenu);
@@ -182,6 +184,8 @@ void init_gui() {
 
     W = ugi_add(D, usw_icon, SCREEN_WIDTH/2 + 4 + 34, 154, 32, 32);
     uu_set_data(W, icon);
+
+    return 1;
 }
 
 void deinit_gui() {
