@@ -8,20 +8,27 @@
 
 #include "ugi.h"
 
-unsigned int ugi_screen_width = 0;
-unsigned int ugi_screen_height = 0;
-
 /* Colors */
-unsigned int ugc_background = 0x40318D;
-unsigned int ugc_foreground = 0x7869C4;
+static unsigned int ugc_background = 0x40318D;
+static unsigned int ugc_foreground = 0x7869C4;
 
-void *ugi_font = NULL;
+static void *ugi_font = NULL;
+
+void ugi_default_font(void *font) {
+    ugi_font = font;
+}
+
+void ugi_default_foreground(unsigned int color) {
+    ugc_foreground = color;
+}
+
+void ugi_default_background(unsigned int color) {
+    ugc_background = color;
+}
 
 typedef struct {
     char *key, *val;
 } uAttr;
-
-
 
 struct uWidget {
     ugi_widget_fun fun;
@@ -47,7 +54,7 @@ struct uDialog {
 };
 
 void uu_unclip() {
-    ud_clip(0,0, ugi_screen_width, ugi_screen_height);
+    ud_clip(0,0, ud_display_width(), ud_display_height());
 }
 
 void uu_printf(int x, int y, const char *fmt, ...) {
@@ -209,7 +216,7 @@ int uw_clear(uWidget *W, int msg, int param) {
         uu_get_color_attrs(W, &bg, NULL);
 
         ud_set_color(bg);
-        ud_box(0, 0, ugi_screen_width - 1, ugi_screen_height - 1);
+        ud_box(0, 0, ud_display_width() - 1, ud_display_height() - 1);
     }
     return UW_OK;
 }
@@ -218,8 +225,8 @@ int uw_clear_dith(uWidget *W, int msg, int param) {
     if(msg == UM_START) {
         if(!W->w || !W->h) {
             W->x = 0; W->y = 0;
-            W->w = ugi_screen_width;
-            W->h = ugi_screen_height;
+            W->w = ud_display_width();
+            W->h = ud_display_height();
         }
     } else if(msg == UM_DRAW) {
         unsigned int bg;
@@ -286,8 +293,8 @@ int uw_box(uWidget *W, int msg, int param) {
 int uw_menubar(uWidget *W, int msg, int param) {
 
     if(msg == UM_START) {
-        W->w = ugi_screen_width;
-        W->h = ugi_screen_height;
+        W->w = ud_display_width();
+        W->h = ud_display_height();
         uu_set_data(W, NULL);
     } else if(msg == UM_DRAW) {
         unsigned int bg, fg;

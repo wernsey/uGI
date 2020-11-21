@@ -40,9 +40,6 @@ int main(int argc, char *argv[]) {
 
     screen = bm_create(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    ugi_screen_width = SCREEN_WIDTH;
-    ugi_screen_height = SCREEN_HEIGHT;
-
     int done = 0;
 
     if(!init_gui()) {

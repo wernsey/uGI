@@ -93,6 +93,16 @@ void ud_clip(int x0, int y0, int x1, int y1) {
     bm_clip(screen, x0, y0, x1, y1);
 }
 
+int ud_display_width() {
+    return bm_width(screen);
+}
+
+int ud_display_height() {
+    return bm_height(screen);
+}
+
+/* Helper function to translate SDL events to uGI messages */
+
 int ugisdl_process_event(SDL_Event *e) {
     switch(e->type) {
         case SDL_MOUSEBUTTONDOWN: {
@@ -144,6 +154,8 @@ int ugisdl_process_event(SDL_Event *e) {
     }
     return 0;
 }
+
+/* Some custom widgets */
 
 int usw_dial(uWidget *W, int msg, int param) {
 

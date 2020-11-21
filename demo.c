@@ -105,8 +105,9 @@ uMenu combomenu[] = {
 
 int init_gui() {
 
-    // ugi_font = bm_get_font(screen);
-    ugi_font = bm_make_xbm_font(bold_bits, 7);
+    ugi_default_font(bm_make_xbm_font(bold_bits, 7));
+    ugi_default_background(0x000F00);
+    ugi_default_foreground(0x00F000);
 
     icon = bm_load("other/tile.gif");
     if(!icon)

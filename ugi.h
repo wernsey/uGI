@@ -75,16 +75,8 @@ typedef struct {
     int x, y, w, h;
 } uRect;
 
-extern unsigned int ugi_screen_width;
-extern unsigned int ugi_screen_height;
-
-extern void *ugi_font;
-
-/* Some default colors */
-extern unsigned int ugc_background;
-extern unsigned int ugc_foreground;
-
 /* Utility functions, prefixed with uu_ */
+
 uRect uu_get_position(uWidget *W);
 
 const char *uu_get_attr(uWidget *W, const char *key);
@@ -154,6 +146,10 @@ void ugi_repaint_all();
 int ugi_menu_popup(uMenu *m, int x, int y, void *udata);
 int ugi_menu_popup_ex(uMenu *m, int x, int y, int width, int lines, void *udata);
 
+void ugi_default_font(void *font);
+void ugi_default_foreground(unsigned int color);
+void ugi_default_background(unsigned int color);
+
 /* Functions for which the user of the library needs to provide
 platform specific drawing functions */
 void ud_set_color(unsigned int color);
@@ -179,3 +175,7 @@ int ud_get_key_state(uKeyCode code);
 int ud_text_width(void *font, const char *text);
 
 int ud_text_height(void *font, const char *text);
+
+int ud_display_width();
+
+int ud_display_height();
