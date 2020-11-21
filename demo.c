@@ -100,14 +100,16 @@ uMenu combomenu[] = {
     {"Option D", uu_combo_menu_action, NULL, NULL},
     {"Option E", uu_combo_menu_action, NULL, NULL},
     {"Option F", uu_combo_menu_action, NULL, NULL},
+    {"Option G", uu_combo_menu_action, NULL, NULL},
+    {"Option H", uu_combo_menu_action, NULL, NULL},
     {NULL, NULL, NULL, NULL},
 };
 
 int init_gui() {
 
-    ugi_default_font(bm_make_xbm_font(bold_bits, 7));
-    ugi_default_background(0x000F00);
-    ugi_default_foreground(0x00F000);
+    ugi_set_default_font(bm_make_xbm_font(bold_bits, 7));
+    //ugi_set_default_background(0x000F00);
+    //ugi_set_default_foreground(0x00F000);
 
     icon = bm_load("other/tile.gif");
     if(!icon)
@@ -129,6 +131,9 @@ int init_gui() {
     W = ugi_add(D, uw_button, 4, 22, SCREEN_WIDTH/2 - 8, 10);
     uu_set_attr(W, "label", "Button A");
     uu_set_action(W, button_callback);
+
+    uu_focus(D, W);
+
     W = ugi_add(D, uw_button, SCREEN_WIDTH/2 + 4, 22, SCREEN_WIDTH/2 - 8, 10);
     uu_set_attr(W, "label", "Button B");
     uu_set_action(W, button_callback);

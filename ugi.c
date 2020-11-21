@@ -14,16 +14,28 @@ static unsigned int ugc_foreground = 0x7869C4;
 
 static void *ugi_font = NULL;
 
-void ugi_default_font(void *font) {
+void ugi_set_default_font(void *font) {
     ugi_font = font;
 }
 
-void ugi_default_foreground(unsigned int color) {
+void *ugi_get_default_font() {
+    return ugi_font;
+}
+
+void ugi_set_default_foreground(unsigned int color) {
     ugc_foreground = color;
 }
 
-void ugi_default_background(unsigned int color) {
+unsigned int ugi_get_default_foreground() {
+    return ugc_foreground;
+}
+
+void ugi_set_default_background(unsigned int color) {
     ugc_background = color;
+}
+
+unsigned int ugi_get_default_background() {
+    return ugc_background;
 }
 
 typedef struct {
@@ -75,8 +87,8 @@ void uu_clear_widget(uWidget *W, unsigned int bg) {
     // The -1 and +1s are to clear the highlight box if present
     ud_fill_box(W->x-1,
         W->y-1,
-        W->x + W->w + 1,
-        W->y + W->h + 1);
+        W->x + W->w,
+        W->y + W->h);
 }
 
 static int widget_msg(uWidget *W, int msg, int param);
@@ -134,6 +146,10 @@ int uu_get_attr_i(uWidget *W, const char *key) {
     return 0;
 }
 
+uDialog *uu_get_dialog(uWidget *W) {
+    return W->D;
+}
+
 void uu_set_flag(uWidget *W, unsigned int flag) {
     W->flags |= flag;
 }
@@ -178,7 +194,7 @@ static int widget_msg(uWidget *W, int msg, int param) {
     return r;
 }
 
-static void w_focus(uDialog *D, uWidget *W) {
+void uu_focus(uDialog *D, uWidget *W) {
     int j;
     for(j = 0; j < D->n; j++) {
         if(D->widgets[j].flags & UF_FOCUS) {
@@ -197,14 +213,14 @@ void uu_get_color_attrs(uWidget *W, unsigned int *bgp, unsigned int *fgp) {
     if(bgp) {
         const char *attr = uu_get_attr(W, "background");
         if(attr)
-            *bgp = 0x000000; // FIXME: bm_atoi(attr);
+            *bgp = atoi(attr);
         else
             *bgp = ugc_background;
     }
     if(fgp) {
         const char *attr = uu_get_attr(W, "foreground");
         if(attr)
-            *fgp = 0xFFFFFF; // FIXME: bm_atoi(attr);
+            *fgp = atoi(attr);
         else
             *fgp = ugc_foreground;
     }
@@ -282,7 +298,8 @@ int uw_box(uWidget *W, int msg, int param) {
         unsigned int bg, fg;
         uu_get_color_attrs(W, &bg, &fg);
 
-        uu_clear_widget(W, bg);
+        ud_set_color(bg);
+        ud_fill_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
         ud_set_color(fg);
         ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
@@ -801,7 +818,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
     scroll bar position (line number).
 */
 static void draw_scrollbar(int bx, int by, int bw, int bh, int scroll, int num, int lh) {
-    ud_dither_box(bx, by, bx + bw, by + bh);
+    ud_dither_box(bx, by, bx + bw - 1, by + bh - 1);
     int nlf = bh/lh - 1; // visible lines
     if(nlf < num) {
         int nl = num - nlf;
@@ -1530,7 +1547,7 @@ int ugi_message(int msg, int param) {
             } else if(r == UW_UNFOCUS_PREV) {
                 up = i;
             } else if(r == UW_WANTFOCUS) {
-                w_focus(D, W);
+                uu_focus(D, W);
                 break;
             }
         }
@@ -1627,7 +1644,7 @@ int ugi_click(int mx, int my) {
                 r = widget_msg(W, UM_CLICK, (mx << 16) | my);
                 if(r == UW_HANDLED) {
                     if(!uu_get_flag(W, UF_FOCUS)) {
-                        w_focus(D, W);
+                        uu_focus(D, W);
                     }
                     return UW_OK;
                 } else if(r == UW_CLOSE) {

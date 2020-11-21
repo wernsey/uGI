@@ -68,7 +68,7 @@ uMenu mainmenu[] = {
 };
 
 int init_gui() {
-    ugi_font = bm_make_xbm_font(bold_bits, 7);
+    ugi_set_default_font(bm_make_xbm_font(bold_bits, 7));
 
     uDialog *D = ugi_start();
     uWidget *W;

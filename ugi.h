@@ -82,6 +82,8 @@ uRect uu_get_position(uWidget *W);
 const char *uu_get_attr(uWidget *W, const char *key);
 void uu_set_attr(uWidget *W, const char *key, const char *val);
 
+uDialog *uu_get_dialog(uWidget *W);
+
 void uu_set_attr_i(uWidget *W, const char *key, int val);
 int uu_get_attr_i(uWidget *W, const char *key);
 
@@ -106,6 +108,8 @@ void uu_combo_menu_action(struct uMenu *, void *udata);
 void uu_clear_widget(uWidget *W, unsigned int bg);
 void uu_highlight_box(int x0, int y0, int x1, int y1);
 void uu_highlight_widget(uWidget *W);
+
+void uu_focus(uDialog *D, uWidget *W);
 
 int uu_count_lines(const char *text);
 
@@ -146,9 +150,12 @@ void ugi_repaint_all();
 int ugi_menu_popup(uMenu *m, int x, int y, void *udata);
 int ugi_menu_popup_ex(uMenu *m, int x, int y, int width, int lines, void *udata);
 
-void ugi_default_font(void *font);
-void ugi_default_foreground(unsigned int color);
-void ugi_default_background(unsigned int color);
+void ugi_set_default_font(void *font);
+void *ugi_get_default_font();
+void ugi_set_default_foreground(unsigned int color);
+unsigned int ugi_get_default_foreground();
+void ugi_set_default_background(unsigned int color);
+unsigned int ugi_get_default_background();
 
 /* Functions for which the user of the library needs to provide
 platform specific drawing functions */

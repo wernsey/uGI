@@ -186,7 +186,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
                     (void)bg;// FIXME: background
                     ud_set_color(fg);
                 } else {
-                    ud_set_color(ugc_foreground);
+                    ud_set_color(ugi_get_default_foreground());
                 }
                 uu_printf(x, y, "%c", text[i]);
                 x += cw;
