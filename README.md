@@ -32,36 +32,7 @@ $ ./ugi
 
 This diagram shows the various aspects of uGI applications:
 
-```
-    +-------------------------------+
-    |                               |
-    |      GUI Application          |
-    |                               |
-    |                               |
-    +-------------------------------+
-    |                               |
-    |   uGI Library   +----------+  |
-    |                 | Widgets  |  |
-    |                 +------+---+  |
-    |      ^                 |      |
-    |      |                 |      |
-    +------|-----------------|------+
-    |      |                 |      |
-    |      |                 v      |
-    |  +---+------+  +-----------+  |
-    |  | Event    |  | Drawing   |  |
-    |  | Handling |  | Functions |  |
-    |  +----------+  +-----------+  |
-    |                               |
-    |        Driver Program         |
-    |                               |
-    +-------------------------------+
-    |                               |
-    |       Operating System        |
-    |                               |
-    |                               |
-    +-------------------------------+
-```
+![diagram](doc/diagram.svg)
 
 * The GUI Application is the application that is using uGI to draw its graphical user interface
 * The uGI Library is the code in ugi.c and ugi.h. They provide the framework for getting widgets onto the screen and managing interactions with them
@@ -83,7 +54,7 @@ The next step is to add widgets to the dialog through the `ugi_add()` function. 
 
     uWidget *W = ugi_add(D, uw_button, 4, 22, SCREEN_WIDTH/2 - 8, 10);
 
-The first parameter to `ugi_add` is the `uDialog` to which the widget is to be added. The second parameter is a pointer to a _widget function_ that implements the actual widget. These widget functions must match the `ugi_widget_fun` prototype.
+The first parameter to `ugi_add` is the `uDialog` to which the widget is to be added. The second parameter is a pointer to a _widget function_ that implements the actual widget. These widget functions must match the `ugi_widget_fun` prototype. The next parameters are the top-left corner of the widget's `x` and `y` coordinates and the width and height of the widget.
 
 The widget function receives messages from the uGI library and processes them. The message types are defined in the `uMessage` enum in `ugi.h`. An example of a message us `UM_DRAW` that tells the widget that uGI wants it to redraw itself. Another example is `UM_CLICK` which is how uGI tells the widget that the user clicked on it.
 
