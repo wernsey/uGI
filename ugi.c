@@ -993,7 +993,7 @@ int uw_combo(uWidget *W, int msg, int param) {
 
         const char *val = uu_get_attr(W, "value");
         if(val) {
-            int y = W->y + (W->h - ud_text_height(W->font, val))/2;
+            int y = W->y + (W->h - ud_text_height(W->font, val))/2 + 1;
             ud_text(W->x + 2, y, val);
         }
         int x = W->x + W->w - 10;
@@ -1051,7 +1051,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
     int ch = ud_text_height(W->font, " ");
 
     if(msg == UM_START) {
-        uu_set_attr_i(W, "cursor", 2);
+        uu_set_attr_i(W, "cursor", 0);
         uu_set_attr_i(W, "scroll", 0);
         uu_set_attr_i(W, "time", 0);
         uu_set_attr_i(W, "blink", 0);

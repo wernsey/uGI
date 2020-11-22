@@ -120,9 +120,6 @@ static void dummy_lexer(const char *text, char *colors, int len) {
 
 int uw_richedit(uWidget *W, int msg, int param) {
 
-    //assert(ugi_screen);
-    //int cw = bm_text_width(ugi_screen, " ");
-    //int ch = bm_text_height(ugi_screen, " ");
     int cw = ud_text_width(uu_get_font(W), " ");
     int ch = ud_text_height(uu_get_font(W), " ");
 
@@ -160,17 +157,28 @@ int uw_richedit(uWidget *W, int msg, int param) {
             if(text[i] == '\n')
                 line++;
         }
+
         x = pos.x + 2;
         y = pos.y + 2;
 
+        /* This is nasty */
         int len = strlen(text);
-        lexer_fun lexer = uu_get_action(W);
         char *colors = malloc(len + 1);
         memset(colors, 0, len + 1);
-        if(lexer) lexer(text, colors, len);
+
+        lexer_fun lexer = uu_get_action(W);
+        if(lexer)
+            lexer(text, colors, len);
+
+        x = pos.x + 2;
+        y = pos.y + 2;
 
         ud_clip(pos.x, pos.y, pos.x + pos.w, pos.y + pos.h);
         while(i < len && text[i]) {
+            if(uu_get_flag(W,UF_FOCUS) && i == cursor && blink) {
+                ud_set_color(fg);
+                ud_fill_box(x, y - 2, x+2, y + 8);
+            }
             if(text[i] == '\n') {
                 x = pos.x + 2;
                 y += ch + 2;
@@ -183,16 +191,13 @@ int uw_richedit(uWidget *W, int msg, int param) {
                 if(colors[i]) {
                     unsigned int fg = palette[colors[i] & 0x0F];
                     unsigned int bg = palette[(colors[i] >> 8) & 0x0F];
-                    (void)bg;// FIXME: background
+                    (void)bg; // FIXME: background
                     ud_set_color(fg);
                 } else {
                     ud_set_color(ugi_get_default_foreground());
                 }
                 uu_printf(x, y, "%c", text[i]);
                 x += cw;
-            }
-            if(uu_get_flag(W,UF_FOCUS) && i == cursor && blink) {
-                ud_fill_box(x, y - 2, x+2, y + 8);
             }
             i++;
         }
