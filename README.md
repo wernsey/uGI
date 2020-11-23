@@ -119,9 +119,9 @@ Use the [GitHub issues](https://github.com/wernsey/uGI/issues) page for bug repo
 
 ## Acknowledgements
 
-* The main inspiration for this library was [Allegro]'s GUI library (from Allegro 4 - it has been removed in newer versions). The idea to have each widget be a function that processes messages came from there and I borrowed a lot of ideas of what those messages should be from there. Apparently it in turn was inspired by the GEM system on Atari ST computers, but I am not familiar with those.
+* The main inspiration for this library was [Allegro]'s GUI library (specifically Allegro 4 - it has been removed in newer versions). uGI is also based on the idea to have each widget be a function that processes messages and I borrowed a lot of ideas from it. Apparently it in turn was inspired by the GEM system on Atari ST computers, but I am not familiar with those.
   * For reference, here is the [GUI routines](https://liballeg.org/stabledocs/en/alleg035.html) section of the Allegro 4 manual.
-  * Here is an archived copy of the [Allegro GUI Clinic][allegro-gui] tutorial that helped me understand how it worked back in the old days.
+  * Here is an archived copy of the [Allegro GUI Clinic][allegro-gui] (archive.org link) tutorial that helped me understand how it worked back in the old days.
 * RXI's [microui] library inspired me to dig up the code for this library again and clean it up. I also liked its API and borrowed some ideas from it. [microui] is a immediate mode GUI library whereas uGI is a retained mode GUI library.
 
 [allegro]: https://liballeg.org/

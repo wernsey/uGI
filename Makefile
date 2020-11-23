@@ -37,7 +37,7 @@ $(EXECUTABLE): $(OBJECTS)
 
 ugi.o: ugi.c ugi.h
 demo.o: demo.c ugi.h other/bmp.h SDL/ugiSDL.h SDL/sdlmain.h other/bold.xbm
-SDL/ugiSDL.o: SDL/ugiSDL.c ugi.h other/bmp.h
+SDL/ugiSDL.o: SDL/ugiSDL.c ugi.h SDL/sdlmain.h other/bmp.h
 SDL/sdlmain.o: SDL/sdlmain.c ugi.h other/bmp.h SDL/ugiSDL.h SDL/sdlmain.h
 other/bmp.o: other/bmp.c other/bmp.h
 

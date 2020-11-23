@@ -2,6 +2,9 @@
 
 #include "../ugi.h"
 
+/* TODO: I'd like to get rid of this, but I need the screen dimensions */
+#include "sdlmain.h"
+
 #include "../other/bmp.h"
 
 Bitmap *screen = NULL;
@@ -102,7 +105,8 @@ int ugisdl_process_event(SDL_Event *e) {
         case SDL_MOUSEBUTTONDOWN: {
             if(e->button.button != SDL_BUTTON_LEFT)
                 return 0;
-            ugi_click(e->button.x, e->button.y);
+
+            ugi_click(e->button.x * SCREEN_WIDTH / WINDOW_WIDTH, e->button.y * SCREEN_HEIGHT / WINDOW_HEIGHT);
             return 1;
         }
         case SDL_KEYDOWN: {
