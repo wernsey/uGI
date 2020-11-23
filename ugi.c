@@ -134,6 +134,15 @@ void uu_set_attr(uWidget *W, const char *key, const char *val) {
     widget_msg(W, UM_CHANGE, i);
 }
 
+void uu_set_attrf(uWidget *W, const char *key, const char *fmt, ...) {
+    char attr[256];
+    va_list arg;
+    va_start(arg, fmt);
+    vsnprintf(attr, sizeof attr, fmt, arg);
+    va_end(arg);
+    uu_set_attr(W, key, attr);
+}
+
 void uu_set_attr_i(uWidget *W, const char *key, int val) {
     char buf[20];
     snprintf(buf, sizeof buf - 1, "%d", val);
