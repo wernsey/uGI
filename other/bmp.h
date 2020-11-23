@@ -1097,6 +1097,20 @@ BmFont *bm_get_font(Bitmap *b);
 void bm_reset_font(Bitmap *b);
 
 /**
+ * #### `int bm_font_text_width(BmFont *font, const char *s)`
+ *
+ * Returns the width in pixels of a string of text.
+ */
+int bm_font_text_width(BmFont *font, const char *s);
+
+/**
+ * #### `int bm_font_text_height(BmFont *font, const char *s)`
+ *
+ * Returns the height in pixels of a string of text.
+ */
+int bm_font_text_height(BmFont *font, const char *s);
+
+/**
  * #### `int bm_text_width(Bitmap *b, const char *s)`
  *
  * Returns the width in pixels of a string of text.

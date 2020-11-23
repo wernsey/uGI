@@ -5958,15 +5958,15 @@ BmFont *bm_get_font(Bitmap *b) {
     return b->font;
 }
 
-int bm_text_width(Bitmap *b, const char *s) {
+int bm_font_text_width(BmFont *font, const char *s) {
     int len = 0, max_len = 0;
     int glyph_width;
 
-    assert(b);
-    if(!b->font || !b->font->width)
+    assert(font);
+    if(!font || !font->width)
         return 0;
 
-    glyph_width = b->font->width(b->font);
+    glyph_width = font->width(font);
     while(*s) {
         if(*s == '\n') {
             if(len > max_len)
@@ -5984,18 +5984,26 @@ int bm_text_width(Bitmap *b, const char *s) {
     return max_len * glyph_width;
 }
 
-int bm_text_height(Bitmap *b, const char *s) {
+int bm_text_width(Bitmap *b, const char *s) {
+    return bm_font_text_width(b->font, s);
+}
+
+int bm_font_text_height(BmFont *font, const char *s) {
     int height = 1;
     int glyph_height;
-    assert(b);
-    if(!b->font || !b->font->height)
+    assert(font);
+    if(!font || !font->height)
         return 0;
-    glyph_height = b->font->height(b->font);
+    glyph_height = font->height(font);
     while(*s) {
         if(*s == '\n') height++;
         s++;
     }
     return height * glyph_height;
+}
+
+int bm_text_height(Bitmap *b, const char *s) {
+    return bm_font_text_width(b->font, s);
 }
 
 int bm_putc(Bitmap *b, int x, int y, char c) {

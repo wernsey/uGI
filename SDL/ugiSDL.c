@@ -31,19 +31,13 @@ int ud_get_key_state(uKeyCode code) {
 int ud_text_width(void *font, const char *text) {
     if(!text)
         return 0;
-    return bm_text_width(screen, text);
+    return bm_font_text_width(font, text);
 }
 
 int ud_text_height(void *font, const char *text) {
     if(!text)
         return 0;
-    int lines = 1;
-    while(*text) {
-        if(*text == '\n')
-            lines++;
-        text++;
-    }
-    return 8 * lines;
+    return bm_font_text_height(font, text);
 }
 
 void ud_set_color(unsigned int color) {
