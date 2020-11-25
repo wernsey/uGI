@@ -280,6 +280,9 @@ int usw_icon(uWidget *W, int msg, int param) {
     uRect pos = uu_get_position(W);
 
     if(msg == UM_DRAW) {
+        if(uu_get_flag(W, UF_HIDDEN))
+            return UW_OK;
+
         Bitmap *b = uu_get_data(W);
         if(!b) {
             unsigned int fg;
@@ -295,6 +298,13 @@ int usw_icon(uWidget *W, int msg, int param) {
         if(!src_w) src_w = bm_width(b);
         if(!src_h) src_h = bm_height(b);
         bm_blit_ex(screen, pos.x, pos.y, pos.w, pos.h, b, src_x, src_y, src_w, src_h, mask);
+        return UW_OK;
+    }else if(msg == UM_CLICK) {
+        ugi_widget_action cb = uu_get_action(W);
+        if(cb) {
+            cb(W);
+            return UW_HANDLED;
+        }
         return UW_OK;
     }
     return uw_button(W, msg, param);
