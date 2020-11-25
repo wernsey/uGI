@@ -1539,7 +1539,7 @@ int ugi_message(int msg, int param) {
 
         uDialog *D = dialog_stack[d_top - 1];
         int r, i, j, u = -1, up = -1;
-        for(i = 0; i < D->n; i++) {
+        for(i = D->n - 1; i >= 0; i--) {
             uWidget *W = &D->widgets[i];
             if(uu_get_flag(W, UF_HIDDEN))
                 continue;
