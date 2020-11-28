@@ -4,7 +4,7 @@ please excuse me that the code in here is a bit rough.
 
 TODO:
     * If you click on a line containing tabs it really messes up the cursor position
-    * The dummy lexer is borked, and the API needs some work
+    * The lexer API needs some work
     * clicking on the scrollbar does nothing
 
 There are a couple of features I'd like to see:
@@ -62,60 +62,65 @@ static void dummy_lexer(GapBuffer *g, char *colors, int len) {
     for(i = 0; i < len; i++) {
         char c = gb_char(g, i);
         if(sol) {
-            while(i < len - 1 && isspace(c)) i++;
+            while(i < len - 1 && isspace(c)) c = gb_char(g, ++i);
             if(i < len && c == '#') {
-                while(i < len && c != '\n')
+                while(i < len && gb_char(g, i) != '\n')
                     colors[i++] = GREEN;
-            continue;
+                continue;
             }
         }
 
         if(strchr("\"'", c)) {
             char term = c;
             colors[i] = RED;
-            c = gb_char(g, i++);
-            while(c && c != term && c != '\n') {
+            while((c = gb_char(g, ++i)) && c != term && c != '\n') {
                 if(c == '\\') {
                     colors[i] = RED;
                     c = gb_char(g, i++);
                 }
                 colors[i] = RED;
-                c = gb_char(g, i++);
             }
             colors[i] = RED;
-        } else if(c == '/' && gb_char(g, i + 1) == '/') {
-            colors[i++] = LIGHT_GREY;
-            colors[i++] = LIGHT_GREY;
+        }
+         else if(c == '/' && gb_char(g, i + 1) == '/') {
+            colors[i++] = PURPLE;
+            colors[i++] = PURPLE;
             while((c = gb_char(g, i)) && c != '\n') {
-                colors[i++] = LIGHT_GREY;
+                colors[i++] = PURPLE;
             }
-        } else if(c == '/' && gb_char(g, i + 1) == '*') {
-            colors[i++] = LIGHT_GREY;
-            colors[i++] = LIGHT_GREY;
-            while(gb_char(g,i) == '*' && gb_char(g,i+1) == '/')
-                colors[i++] = LIGHT_GREY;
-            colors[i++] = LIGHT_GREY;
-            colors[i] = LIGHT_GREY;
-        } else if(isalpha(c) || c == '_') {
-            int s = i, k = LIGHT_BLUE;
-            while((c = gb_char(g, i)) && (isalnum(c) || c == '_'))
-                i++;
+        }
+        else if(c == '/' && gb_char(g, i + 1) == '*') {
+            colors[i++] = PURPLE;
+            colors[i++] = PURPLE;
+            while((c=gb_char(g,i)) && !(c == '*' && gb_char(g,i+1) == '/'))
+                colors[i++] = PURPLE;
+            colors[i++] = PURPLE;
+            colors[i] = PURPLE;//LIGHT_GREY;
+        }
+        else if(isalpha(c) || c == '_') {
+            int s = i, k = LIGHT_BLUE, j=0;
 
-            /* FIXME: I need some gb_memcmp()
-            int len = i - s, j;
+            char kbuf[12];
+            while((c = gb_char(g, i)) && (isalnum(c) || c == '_')) {
+                if(j < sizeof kbuf - 1)
+                    kbuf[j++] = c;
+                i++;
+            }
+            kbuf[j] = '\0';
+
+            int len = i - s;
             for(j = 0; keywords[j]; j++) {
-                if(len == strlen(keywords[j]) && !memcmp(keywords[j], text+s, len)) {
+                if(!strcmp(keywords[j], kbuf)) {
                     k = CYAN;
                     break;
                 }
             }
-            */
-           (void)keywords;
 
             while(s < i)
                 colors[s++] = k;
             i--;
-        } else if(isdigit(c)) {
+        }
+        else if(isdigit(c)) {
             if(c == '0' && tolower(gb_char(g, i+1) == 'x')) {
                 colors[i++] = ORANGE;
                 colors[i++] = ORANGE;
@@ -125,7 +130,11 @@ static void dummy_lexer(GapBuffer *g, char *colors, int len) {
                 while((c = gb_char(g, i)) && strchr("1234567890.eE", c))
                     colors[i++] = ORANGE;
             }
-        } else
+            i--;
+        }
+#if 0
+#endif
+        else
             colors[i] = LIGHT_GREY;
         sol = (c == '\n');
     }
@@ -152,8 +161,8 @@ int uw_richedit(uWidget *W, int msg, int param) {
         uu_set_attr_i(W, "time", 0);
         uu_set_attr_i(W, "blink", 0);
 
-        //uu_set_action(W, dummy_lexer);
-        (void)dummy_lexer;
+        uu_set_action(W, dummy_lexer);
+        //(void)dummy_lexer;
 
         uu_set_data(W, gb_create());
 
