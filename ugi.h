@@ -79,6 +79,8 @@ typedef struct {
 
 uRect uu_get_position(uWidget *W);
 
+ugi_widget_fun uu_get_widget_fun(uWidget *W);
+
 const char *uu_get_attr(uWidget *W, const char *key);
 void uu_set_attr(uWidget *W, const char *key, const char *val);
 
@@ -120,6 +122,10 @@ int uu_start_of_line(const char *text, int line);
 void uu_unclip();
 
 void uu_printf(int x, int y, const char *fmt, ...);
+
+void uu_draw_scrollbar(int bx, int by, int bw, int bh, int scroll, int num, int lh);
+
+int uu_click_scrollbar(int mx, int my, int bx, int by, int bw, int bh, int scroll, int num, int lh);
 
 /* Widget functions, prefixed with uw */
 int uw_clear(uWidget *W, int msg, int param);

@@ -87,7 +87,7 @@ int init_gui() {
 
     W = ugi_add(D, uw_richedit, 2, 12 + 10, SCREEN_WIDTH - 4, SCREEN_HEIGHT - 12 - 2 - 10);
     uu_set_flag(W, UF_FOCUS);
-    uu_set_attr(W, "text", txt);
+    rt_set_text(W, txt);
 
     free(txt);
 

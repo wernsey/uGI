@@ -21,7 +21,7 @@ else
   LDFLAGS += -s
 endif
 
-SOURCES=test.c richedit.c ../ugi.c ../SDL/sdlmain.c ../SDL/ugiSDL.c ../other/bmp.c
+SOURCES=test.c richedit.c gap.c ../ugi.c ../SDL/sdlmain.c ../SDL/ugiSDL.c ../other/bmp.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: $(EXECUTABLE)
@@ -35,7 +35,8 @@ $(EXECUTABLE): $(OBJECTS)
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-richedit.o: richedit.c richedit.h ../ugi.h
+richedit.o: richedit.c richedit.h ../ugi.h gap.h
+gap.o: gap.c gap.h
 test.o: test.c ../ugi.h ../other/bmp.h ../SDL/ugiSDL.h ../SDL/sdlmain.h ../other/bold.xbm
 ../ugi.o: ../ugi.c ../ugi.h
 ../SDL/ugiSDL.o: ../SDL/ugiSDL.c ../ugi.h ../other/bmp.h

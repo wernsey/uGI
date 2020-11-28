@@ -99,6 +99,10 @@ uRect uu_get_position(uWidget *W) {
     return pos;
 }
 
+ugi_widget_fun uu_get_widget_fun(uWidget *W) {
+    return W->fun;
+}
+
 const char *uu_get_attr(uWidget *W, const char *key) {
     int i;
     for(i = 0; i < W->n; i++) {
@@ -826,7 +830,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
     `lh` is the height of each line in pixels, and `scroll` is the current
     scroll bar position (line number).
 */
-static void draw_scrollbar(int bx, int by, int bw, int bh, int scroll, int num, int lh) {
+void uu_draw_scrollbar(int bx, int by, int bw, int bh, int scroll, int num, int lh) {
     ud_dither_box(bx, by, bx + bw - 1, by + bh - 1);
     int nlf = bh/lh - 1; // visible lines
     if(nlf < num) {
@@ -841,9 +845,9 @@ static void draw_scrollbar(int bx, int by, int bw, int bh, int scroll, int num, 
     }
 }
 
-/* Computes a new value for a scrollbar drawn with `draw_scrollbar()`
+/* Computes a new value for a scrollbar drawn with `uu_draw_scrollbar()`
 based on a mouse click at `mx`,`my` */
-static int click_scrollbar(int mx, int my, int bx, int by, int bw, int bh, int scroll, int num, int lh) {
+int uu_click_scrollbar(int mx, int my, int bx, int by, int bw, int bh, int scroll, int num, int lh) {
     if(mx < bx || mx >= bx + bw) return scroll;
     if(my < by || my >= by + bh) return scroll;
     int nlf = bh/lh - 1;
@@ -910,7 +914,7 @@ int uw_listbox(uWidget *W, int msg, int param) {
             }
         }
         ud_set_color(fg);
-        draw_scrollbar(W->x + W->w - 6, W->y + 1, 6, W->h, scroll, n, ch + 2);
+        uu_draw_scrollbar(W->x + W->w - 6, W->y + 1, 6, W->h, scroll, n, ch + 2);
         uu_unclip();
 
     } else if(msg == UM_CLICK) {
@@ -923,7 +927,7 @@ int uw_listbox(uWidget *W, int msg, int param) {
 
         int x = W->x + W->w - 6 - 1;
         if(mx > x) {
-            scroll = click_scrollbar(mx, my, W->x + W->w - 6, W->y, 6, W->h, scroll, n, ch + 2);
+            scroll = uu_click_scrollbar(mx, my, W->x + W->w - 6, W->y, 6, W->h, scroll, n, ch + 2);
             uu_set_attr_i(W, "scroll", scroll);
         } else {
             int y = (my - W->y)/8 + scroll;
@@ -1121,7 +1125,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
             // Cursor at end of text
             ud_fill_box(x, y - 2, x+2, y + 8);
         }
-        draw_scrollbar(W->x + W->w - 6, W->y + 1, 6, W->h, scroll, n, ch + 2);
+        uu_draw_scrollbar(W->x + W->w - 6, W->y + 1, 6, W->h - 2, scroll, n, ch + 2);
         uu_unclip();
 
     } else if(msg == UM_CLICK) {
@@ -1137,7 +1141,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         int x = W->x + W->w - 6 - 1;
         if(mx > x) {
 
-            scroll = click_scrollbar(mx, my, W->x + W->w - 6, W->y, 6, W->h, scroll, n, ch + 2);
+            scroll = uu_click_scrollbar(mx, my, W->x + W->w - 6, W->y, 6, W->h, scroll, n, ch + 2);
             uu_set_attr_i(W, "scroll", scroll);
 
         } else {
@@ -1524,7 +1528,7 @@ int ugi_paint() {
                 my += (ch+2);
             }
             if(menu_stack[i].lines && nitems > menu_stack[i].lines)
-                draw_scrollbar(menu_x + mw - 6, menu_y, 6, mh, menu_stack[i].scroll, nitems, ch+2);
+                uu_draw_scrollbar(menu_x + mw - 6, menu_y, 6, mh, menu_stack[i].scroll, nitems, ch+2);
         }
         dialog_dispose_all();
         return 1;
@@ -1621,7 +1625,7 @@ int ugi_click(int mx, int my) {
 
             if(nitems > menu_stack[i].lines && mx >= menu_x + mnw - 6 && mx < menu_x + mnw
                 && my >= menu_y && my < menu_y + mnh) {
-                menu_stack[i].scroll = click_scrollbar(mx, my, menu_x + mnw - 6, menu_y, 6, mnh, menu_stack[i].scroll, nitems, ch+2);
+                menu_stack[i].scroll = uu_click_scrollbar(mx, my, menu_x + mnw - 6, menu_y, 6, mnh, menu_stack[i].scroll, nitems, ch+2);
                 return UW_OK;
             }
 
