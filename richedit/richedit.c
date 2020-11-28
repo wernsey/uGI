@@ -202,7 +202,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
         char c;
         int i = gb_start_of_line(g, scroll);
         while(i < len && (c = gb_char(g, i))) {
-            if(uu_get_flag(W,UF_FOCUS) && i == cursor && blink) {
+            if(uu_get_flag(W,UA_FOCUS) && i == cursor && blink) {
                 ud_set_color(fg);
                 ud_fill_box(x, y - 2, x+2, y + 8);
             }
@@ -233,7 +233,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
         free(colors);
 
         ud_set_color(fg);
-        if(uu_get_flag(W,UF_FOCUS) && i == cursor && blink) {
+        if(uu_get_flag(W,UA_FOCUS) && i == cursor && blink) {
             // Cursor at end of text
             ud_fill_box(x, y - 2, x+2, y + 8);
         }
@@ -241,7 +241,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
         uu_draw_scrollbar(pos.x + pos.w - 6, pos.y + 1, 6, pos.h-2, scroll, n, ch + 2);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
         ud_box(pos.x, pos.y, pos.x + pos.w - 1, pos.y + pos.h - 1);
@@ -350,7 +350,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
 
         return UW_HANDLED;
     } else if(msg == UM_TICK) {
-        if(uu_get_flag(W, UF_FOCUS)) {
+        if(uu_get_flag(W, UA_FOCUS)) {
             int elapsed = uu_get_attr_i(W, "time") + param;
             uu_set_attr_i(W, "time", elapsed);
             int blink = uu_get_attr_i(W, "blink");

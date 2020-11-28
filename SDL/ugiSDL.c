@@ -167,6 +167,10 @@ int usw_dial(uWidget *W, int msg, int param) {
         uu_set_attr_i(W, "minimum", 0);
         uu_set_attr_i(W, "maximum", 100);
     } else if(msg == UM_DRAW) {
+
+        if(uu_get_flag(W, UA_HIDDEN))
+            return UW_OK;
+
         unsigned int bg, fg;
         uu_get_color_attrs(W, &bg, &fg);
         ud_set_font(uu_get_font(W));
@@ -174,7 +178,7 @@ int usw_dial(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
         int x0, y0, r = uu_get_attr_i(W, "radius");
@@ -280,7 +284,7 @@ int usw_icon(uWidget *W, int msg, int param) {
     uRect pos = uu_get_position(W);
 
     if(msg == UM_DRAW) {
-        if(uu_get_flag(W, UF_HIDDEN))
+        if(uu_get_flag(W, UA_HIDDEN))
             return UW_OK;
 
         Bitmap *b = uu_get_data(W);

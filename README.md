@@ -66,7 +66,7 @@ The other parameters to `ugi_add()` is the x,y position and dimensions of the wi
 
 Widgets may have attributes that the widget function might use to control the widget's appearance or behaviour, or that a GUI application might need.
 
-    uu_set_attr(W, "label", "Button A");
+    uu_set_attr_s(W, "label", "Button A");
 
 Depending on the widget, it may also need an _action callback_ function that contains a pointer to a function that should be called when the widget is clicked or changed or manipulated (depending on the widget):
 
@@ -116,6 +116,14 @@ The project's home is at <https://github.com/wernsey/uGI>
 ## Roadmap
 
 Use the [GitHub issues](https://github.com/wernsey/uGI/issues) page for bug reports and feature requests.
+
+Future plans include:
+
+* File dialog boxes
+* Yes/No/Cancel type dialog boxes
+* Integration with the [Lua][] scripting language
+
+[Lua]: http://www.lua.org
 
 ## Acknowledgements
 

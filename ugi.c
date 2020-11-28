@@ -118,7 +118,7 @@ static uAttr *attr_find(uWidget *W, const char *key) {
     return NULL;
 }
 
-const char *uu_get_attr(uWidget *W, const char *key) {
+const char *uu_get_attr_s(uWidget *W, const char *key) {
     uAttr *a = attr_find(W, key);
     if(!a) return NULL;
     if(a->type == STRING)
@@ -158,13 +158,10 @@ static uAttr *find_attr_or_new(uWidget *W, const char *key) {
     return A;
 }
 
-// Be careful calling this in a UM_CHANGE, because
-// it will send a UM_CHANGE again, leading to recursion.
-void uu_set_attr(uWidget *W, const char *key, const char *val) {
+void uu_set_attr_s(uWidget *W, const char *key, const char *val) {
     uAttr *A = find_attr_or_new(W, key);
     A->type = STRING;
     A->s = strdup(val);
-    //widget_msg(W, UM_CHANGE, 0);
 }
 
 void uu_set_attrf(uWidget *W, const char *key, const char *fmt, ...) {
@@ -173,14 +170,13 @@ void uu_set_attrf(uWidget *W, const char *key, const char *fmt, ...) {
     va_start(arg, fmt);
     vsnprintf(attr, sizeof attr, fmt, arg);
     va_end(arg);
-    uu_set_attr(W, key, attr);
+    uu_set_attr_s(W, key, attr);
 }
 
 void uu_set_attr_i(uWidget *W, const char *key, int val) {
     uAttr *A = find_attr_or_new(W, key);
     A->type = INTEGER;
     A->i = val;
-    //widget_msg(W, UM_CHANGE, 0);
 }
 
 int uu_get_attr_i(uWidget *W, const char *key) {
@@ -198,7 +194,6 @@ void uu_set_attr_p(uWidget *W, const char *key, void *p) {
     uAttr *A = find_attr_or_new(W, key);
     A->type = POINTER;
     A->p = p;
-    //widget_msg(W, UM_CHANGE, 0);
 }
 
 void *uu_get_attr_p(uWidget *W, const char *key) {
@@ -226,19 +221,19 @@ int uu_get_flag(uWidget *W, const char *key) {
 }
 
 void uu_set_data(uWidget *W, void *val) {
-    uu_set_attr_p(W, "data", val);
+    uu_set_attr_p(W, UA_DATA, val);
 }
 
 void *uu_get_data(uWidget *W) {
-    return uu_get_attr_p(W, "data");
+    return uu_get_attr_p(W, UA_DATA);
 }
 
 void uu_set_action(uWidget *W, void *val) {
-    uu_set_attr_p(W, "action", val);
+    uu_set_attr_p(W, UA_ACTION, val);
 }
 
 void *uu_get_action(uWidget *W) {
-    return uu_get_attr_p(W, "action");
+    return uu_get_attr_p(W, UA_ACTION);
 }
 
 void uu_set_font(uWidget *W, void *font) {
@@ -253,7 +248,7 @@ static int widget_msg(uWidget *W, int msg, int param) {
     if(!W->fun) return UW_OK;
     int r = (*W->fun)(W, msg, param);
     if(r == UW_HANDLED || r == UW_DIRTY)
-        uu_set_flag(W, UF_DIRTY);
+        uu_set_flag(W, UA_DIRTY);
     return r;
 }
 
@@ -261,7 +256,7 @@ void uu_focus(uDialog *D, uWidget *W) {
     int j;
     for(j = 0; j < D->n; j++) {
         uWidget *W = &D->widgets[j];
-        if(uu_get_flag(W, UF_FOCUS)) {
+        if(uu_get_flag(W, UA_FOCUS)) {
             widget_msg(&D->widgets[j], UM_LOSEFOCUS, 0);
         }
     }
@@ -275,14 +270,14 @@ int uu_in_widget(uWidget *W, int x, int y) {
 
 void uu_get_color_attrs(uWidget *W, unsigned int *bgp, unsigned int *fgp) {
     if(bgp) {
-        const char *attr = uu_get_attr(W, "background");
+        const char *attr = uu_get_attr_s(W, UA_BACKGROUND);
         if(attr)
             *bgp = atoi(attr);
         else
             *bgp = ugc_background;
     }
     if(fgp) {
-        const char *attr = uu_get_attr(W, "foreground");
+        const char *attr = uu_get_attr_s(W, UA_FOREGROUND);
         if(attr)
             *fgp = atoi(attr);
         else
@@ -334,7 +329,7 @@ int uw_frame(uWidget *W, int msg, int param) {
         x = W->x + W->w - 11;
         ud_box(x + 3, W->y + 3, x + 10 - 3, W->y + 10 - 3);
 
-        const char *lbl = uu_get_attr(W, "label");
+        const char *lbl = uu_get_attr_s(W, "label");
         if(lbl) {
             ud_set_color(fg);
             ud_set_font(W->font);
@@ -422,7 +417,7 @@ int uw_menubar(uWidget *W, int msg, int param) {
 int uw_label(uWidget *W, int msg, int param) {
     if(msg == UM_DRAW) {
         unsigned int bg, fg;
-        const char *lbl = uu_get_attr(W, "label");
+        const char *lbl = uu_get_attr_s(W, "label");
         if(lbl) {
             uu_get_color_attrs(W, &bg, &fg);
             ud_set_font(W->font);
@@ -438,7 +433,7 @@ int uw_label(uWidget *W, int msg, int param) {
 int uw_clabel(uWidget *W, int msg, int param) {
     if(msg == UM_DRAW) {
         unsigned int bg, fg;
-        const char *lbl = uu_get_attr(W, "label");
+        const char *lbl = uu_get_attr_s(W, "label");
         if(lbl) {
             uu_get_color_attrs(W, &bg, &fg);
             ud_set_font(W->font);
@@ -461,13 +456,13 @@ int uw_button(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
         if(uu_get_attr_i(W, "border"))
             ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
-        const char *lbl = uu_get_attr(W, "label");
+        const char *lbl = uu_get_attr_s(W, "label");
         if(lbl) {
             ud_set_font(W->font);
             int x = W->x + (W->w - ud_text_width(W->font, lbl))/2;
@@ -497,10 +492,10 @@ int uw_button(uWidget *W, int msg, int param) {
     } else if(msg == UM_WANTFOCUS) {
         return UW_WANTFOCUS;
     } else if(msg == UM_GETFOCUS) {
-        uu_set_flag(W, UF_FOCUS);
+        uu_set_flag(W, UA_FOCUS);
         return UW_HANDLED;
     } else if(msg == UM_LOSEFOCUS) {
-        uu_clear_flag(W, UF_FOCUS);
+        uu_clear_flag(W, UA_FOCUS);
         return UW_HANDLED;
     } else if(msg == UM_CHANGE) {
         return UW_DIRTY;
@@ -521,9 +516,9 @@ int uw_checkbox(uWidget *W, int msg, int param) {
 
         ud_set_color(fg);
         int value = uu_get_attr_i(W, "value");
-        const char *lbl = uu_get_attr(W, "label");
+        const char *lbl = uu_get_attr_s(W, "label");
 
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
         int y = W->y + (W->h - 10)/2;
@@ -562,11 +557,11 @@ int uw_radio(uWidget *W, int msg, int param) {
 
         ud_set_color(fg);
 
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
            uu_highlight_widget(W);
 
        int value = uu_get_attr_i(W, "value");
-        const char *lbl = uu_get_attr(W, "label");
+        const char *lbl = uu_get_attr_s(W, "label");
        int y = W->y + (W->h - 10)/2;
 
         ud_line(W->x + 5, y, W->x + 10, y + 5);
@@ -631,7 +626,7 @@ int uw_slider(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
         ud_box(W->x + (cw + 4), W->y + 3, W->x + W->w - (cw + 4) - 1, W->y + 5);
@@ -748,7 +743,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
     int ch = ud_text_height(W->font, " ");
 
     if(msg == UM_START) {
-        uu_set_attr(W, "text", "");
+        uu_set_attr_s(W, "text", "");
         uu_set_attr_i(W, "cursor", 0);
         uu_set_attr_i(W, "time", 0);
         uu_set_attr_i(W, "blink", 0);
@@ -761,10 +756,10 @@ int uw_text_input(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
-        const char *text = uu_get_attr(W, "text");
+        const char *text = uu_get_attr_s(W, "text");
         int cursor = uu_get_attr_i(W, "cursor");
 
         ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
@@ -775,14 +770,14 @@ int uw_text_input(uWidget *W, int msg, int param) {
 
         int blink = uu_get_attr_i(W, "blink");
 
-        if(blink && uu_get_flag(W, UF_FOCUS)) {
+        if(blink && uu_get_flag(W, UA_FOCUS)) {
             ud_fill_box(W->x + cursor*cw + 2, W->y, W->x + cursor*cw + 4, W->y + W->h - 1);
         }
         uu_unclip();
     } else if(msg == UM_CLICK) {
         int mx = (param >> 16) & 0xFFFF;
         int cursor = (mx - W->x - 2)/cw;
-        const char *text = uu_get_attr(W, "text");
+        const char *text = uu_get_attr_s(W, "text");
         if(cursor > strlen(text))
             cursor = strlen(text);
         if(cursor < 0)
@@ -790,7 +785,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
         uu_set_attr_i(W, "cursor", cursor);
         return UW_HANDLED;
     } else if(msg == UM_KEY || msg ==  UM_CHAR) {
-        const char *text = uu_get_attr(W, "text");
+        const char *text = uu_get_attr_s(W, "text");
         int cursor = uu_get_attr_i(W, "cursor");
         int len;
 
@@ -817,7 +812,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
                         strncpy(buffer, text, cursor);
                         strncpy(buffer + cursor, text + cursor + 1, len - cursor - 1);
                         buffer[len - 1] = '\0';
-                        uu_set_attr(W, "text", buffer);
+                        uu_set_attr_s(W, "text", buffer);
                         free(buffer);
                     }
                 } break;
@@ -836,7 +831,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
                     strncpy(buffer, text, cursor - 1);
                     strncpy(buffer + cursor - 1, text + cursor, len - cursor);
                     buffer[len - 1] = '\0';
-                    uu_set_attr(W, "text", buffer);
+                    uu_set_attr_s(W, "text", buffer);
                     uu_set_attr_i(W, "cursor", cursor - 1);
                     free(buffer);
                 }
@@ -848,7 +843,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
                     buffer[cursor] = param;
                     strncpy(buffer + cursor + 1, text + cursor, len - cursor);
                     buffer[len + 1] = '\0';
-                    uu_set_attr(W, "text", buffer);
+                    uu_set_attr_s(W, "text", buffer);
                     uu_set_attr_i(W, "cursor", cursor + 1);
                     free(buffer);
                 }
@@ -857,7 +852,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
         }
         return UW_HANDLED;
     } else if(msg == UM_TICK) {
-        if(uu_get_flag(W, UF_FOCUS)) {
+        if(uu_get_flag(W, UA_FOCUS)) {
             int elapsed = uu_get_attr_i(W, "time") + param;
             uu_set_attr_i(W, "time", elapsed);
             int blink = uu_get_attr_i(W, "blink");
@@ -937,7 +932,7 @@ int uw_listbox(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
         ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
@@ -1045,12 +1040,12 @@ int uw_combo(uWidget *W, int msg, int param) {
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
 
         ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
-        const char *val = uu_get_attr(W, "value");
+        const char *val = uu_get_attr_s(W, "value");
         if(val) {
             int y = W->y + (W->h - ud_text_height(W->font, val))/2 + 1;
             ud_text(W->x + 2, y, val);
@@ -1076,7 +1071,7 @@ int uw_combo(uWidget *W, int msg, int param) {
 void uu_combo_menu_action(struct uMenu *menu, void *udata) {
     uWidget *W = udata;
     assert(W->fun == uw_combo);
-    uu_set_attr(W, "value", menu->title);
+    uu_set_attr_s(W, "value", menu->title);
     ugi_widget_action cb = uu_get_action(W);
     if(cb)
         cb(W);
@@ -1113,7 +1108,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         uu_set_attr_i(W, "scroll", 0);
         uu_set_attr_i(W, "time", 0);
         uu_set_attr_i(W, "blink", 0);
-        uu_set_attr(W, "text", "");
+        uu_set_attr_s(W, "text", "");
         return UW_OK;
     } else if(msg == UM_DRAW) {
         unsigned int bg, fg;
@@ -1125,14 +1120,14 @@ int uw_text_area(uWidget *W, int msg, int param) {
 
         int cursor = uu_get_attr_i(W, "cursor");
         int scroll = uu_get_attr_i(W, "scroll");
-        const char *text = uu_get_attr(W, "text");
+        const char *text = uu_get_attr_s(W, "text");
         int blink = uu_get_attr_i(W, "blink");
         if(!text) text = "";
 
         uu_clear_widget(W, bg);
 
         ud_set_color(fg);
-        if(uu_get_flag(W, UF_FOCUS))
+        if(uu_get_flag(W, UA_FOCUS))
             uu_highlight_widget(W);
         ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
@@ -1149,7 +1144,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
 
         ud_clip(W->x, W->y, W->x + W->w, W->y + W->h);
         while(text[i]) {
-            if(uu_get_flag(W, UF_FOCUS) && i == cursor && blink) {
+            if(uu_get_flag(W, UA_FOCUS) && i == cursor && blink) {
                 ud_fill_box(x, y - 2, x+2, y + 8);
             }
             if(text[i] == '\n') {
@@ -1166,7 +1161,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
             }
             i++;
         }
-        if(uu_get_flag(W, UF_FOCUS) && i == cursor && blink) {
+        if(uu_get_flag(W, UA_FOCUS) && i == cursor && blink) {
             // Cursor at end of text
             ud_fill_box(x, y - 2, x+2, y + 8);
         }
@@ -1178,7 +1173,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
 
         int scroll = uu_get_attr_i(W, "scroll");
-        const char *text = uu_get_attr(W, "text");
+        const char *text = uu_get_attr_s(W, "text");
         if(!text) text = "";
         int n;
         n = uu_count_lines(text);
@@ -1206,7 +1201,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         uu_set_attr_i(W, "time", 1<<8);
         return UW_HANDLED;
     } else if(msg == UM_KEY || msg ==  UM_CHAR) {
-        const char *text = uu_get_attr(W, "text");
+        const char *text = uu_get_attr_s(W, "text");
         if(!text) return UW_HANDLED;
         int cursor, line, col;
         int scroll = uu_get_attr_i(W, "scroll");
@@ -1279,7 +1274,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
                         strncpy(buffer, text, cursor);
                         strncpy(buffer + cursor, text + cursor + 1, len - cursor - 1);
                         buffer[len - 1] = '\0';
-                        uu_set_attr(W, "text", buffer);
+                        uu_set_attr_s(W, "text", buffer);
                         free(buffer);
                     }
                 } break;
@@ -1300,7 +1295,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
                     strncpy(buffer, text, cursor - 1);
                     strncpy(buffer + cursor - 1, text + cursor, len - cursor);
                     buffer[len - 1] = '\0';
-                    uu_set_attr(W, "text", buffer);
+                    uu_set_attr_s(W, "text", buffer);
                     uu_set_attr_i(W, "cursor", cursor - 1);
                     free(buffer);
                 }
@@ -1311,7 +1306,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
                 buffer[cursor] = param;
                 strncpy(buffer + cursor + 1, text + cursor, len - cursor);
                 buffer[len + 1] = '\0';
-                uu_set_attr(W, "text", buffer);
+                uu_set_attr_s(W, "text", buffer);
                 uu_set_attr_i(W, "cursor", cursor + 1);
                 free(buffer);
             }
@@ -1319,7 +1314,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
         }
 
         /* Where is the cursor now? */
-        text = uu_get_attr(W, "text");
+        text = uu_get_attr_s(W, "text");
         cursor = uu_get_attr_i(W, "cursor");
 
         for(i = 0, line = 0; text[i] && i < cursor; i++ ) {
@@ -1343,7 +1338,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
 
         return UW_HANDLED;
     } else if(msg == UM_TICK) {
-        if(uu_get_flag(W, UF_FOCUS)) {
+        if(uu_get_flag(W, UA_FOCUS)) {
             int elapsed = uu_get_attr_i(W, "time") + param;
             uu_set_attr_i(W, "time", elapsed);
             int blink = uu_get_attr_i(W, "blink");
@@ -1363,7 +1358,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
 responding to events for development purposes */
 int uw_ticker(uWidget *W, int msg, int param) {
     if(msg == UM_START) {
-        uu_set_attr(W, "sequence", "/-\\|");
+        uu_set_attr_s(W, "sequence", "/-\\|");
         uu_set_attr_i(W, "index", 0);
         uu_set_attr_i(W, "time", 0);
         if(!W->w) W->w = 8;
@@ -1373,7 +1368,7 @@ int uw_ticker(uWidget *W, int msg, int param) {
         unsigned int bg, fg;
         uu_get_color_attrs(W, &bg, &fg);
         int index = uu_get_attr_i(W, "time") >> 8;
-        const char *seq = uu_get_attr(W, "sequence");
+        const char *seq = uu_get_attr_s(W, "sequence");
         if(!seq || !seq[0]) return UW_OK;
 
         uu_clear_widget(W, bg);
@@ -1385,7 +1380,7 @@ int uw_ticker(uWidget *W, int msg, int param) {
         int elapsed = uu_get_attr_i(W, "time") + param;
         uu_set_attr_i(W, "time", elapsed);
         if((elapsed >> 7) & 0x01)
-            uu_set_flag(W, UF_DIRTY);
+            uu_set_flag(W, UA_DIRTY);
     }
     return UW_OK;
 }
@@ -1470,7 +1465,7 @@ uWidget *ugi_add(uDialog *D, ugi_widget_fun fun, int x, int y, int w, int h) {
     W->n = 0;
     W->attrs = calloc(W->aa, sizeof *W->attrs);
 
-    uu_set_flag(W, UF_DIRTY);
+    uu_set_flag(W, UA_DIRTY);
 
     W->font = ugi_font;
 
@@ -1485,7 +1480,7 @@ uWidget *ugi_get_by_id(uDialog *D, const char *id) {
     int i;
     for(i = 0; i < D->n; i++) {
         uWidget *W = &D->widgets[i];
-        const char *wid = uu_get_attr(W, "id");
+        const char *wid = uu_get_attr_s(W, "id");
         if(wid && !strcmp(wid, id))
             return W;
     }
@@ -1526,10 +1521,10 @@ int ugi_paint() {
             ud_set_font(ugi_font);
         for(i = 0; i < D->n; i++) {
             uWidget *W = &D->widgets[i];
-            if(uu_get_flag(W, UF_HIDDEN)) continue;
-            if(uu_get_flag(W, UF_DIRTY)) {
+            if(uu_get_flag(W, UA_HIDDEN)) continue;
+            if(uu_get_flag(W, UA_DIRTY)) {
                 widget_msg(W, UM_DRAW, 0);
-                uu_clear_flag(W, UF_DIRTY);
+                uu_clear_flag(W, UA_DIRTY);
             }
         }
 
@@ -1589,9 +1584,9 @@ int ugi_message(int msg, int param) {
         int r, i, j, u = -1, up = -1;
         for(i = D->n - 1; i >= 0; i--) {
             uWidget *W = &D->widgets[i];
-            if(uu_get_flag(W, UF_HIDDEN))
+            if(uu_get_flag(W, UA_HIDDEN))
                 continue;
-            if((msg == UM_CHAR || msg == UM_KEY) && !uu_get_flag(W, UF_FOCUS)) {
+            if((msg == UM_CHAR || msg == UM_KEY) && !uu_get_flag(W, UA_FOCUS)) {
                 continue;
             }
             r = widget_msg(W, msg, param);
@@ -1613,7 +1608,7 @@ int ugi_message(int msg, int param) {
             widget_msg(&D->widgets[i], UM_LOSEFOCUS, 0);
             for(j = (i + 1) % D->n; j != i; j = (j + 1) % D->n) {
                 uWidget *W = &D->widgets[j];
-                if(uu_get_flag(W, UF_HIDDEN)) continue;
+                if(uu_get_flag(W, UA_HIDDEN)) continue;
                 int k = widget_msg(W, UM_WANTFOCUS, 0);
                 if(k == UW_WANTFOCUS) {
                     widget_msg(&D->widgets[j], UM_GETFOCUS, 0);
@@ -1626,7 +1621,7 @@ int ugi_message(int msg, int param) {
             for(j = i - 1; j != i; j = j - 1) {
                 if(j < 0) j = D->n - 1;
                 uWidget *W = &D->widgets[j];
-                if(uu_get_flag(W, UF_HIDDEN)) continue;
+                if(uu_get_flag(W, UA_HIDDEN)) continue;
                 int k = widget_msg(W, UM_WANTFOCUS, 0);
                 if(k == UW_WANTFOCUS) {
                     widget_msg(&D->widgets[j], UM_GETFOCUS, 0);
@@ -1696,11 +1691,11 @@ int ugi_click(int mx, int my) {
         uDialog *D = dialog_stack[d_top - 1];
         for(i = 0; i < D->n; i++) {
             uWidget *W = &D->widgets[i];
-            if(uu_get_flag(W, UF_HIDDEN)) continue;
+            if(uu_get_flag(W, UA_HIDDEN)) continue;
             if(uu_in_widget(W, mx, my)) {
                 r = widget_msg(W, UM_CLICK, (mx << 16) | my);
                 if(r == UW_HANDLED) {
-                    if(!uu_get_flag(W, UF_FOCUS)) {
+                    if(!uu_get_flag(W, UA_FOCUS)) {
                         uu_focus(D, W);
                     }
                     return UW_OK;
@@ -1721,7 +1716,7 @@ void ugi_repaint_all() {
     if(d_top > 0) {
         uDialog *D = dialog_stack[d_top - 1];
         for(i = 0; i < D->n; i++)
-           uu_set_flag(&D->widgets[i], UF_DIRTY);
+           uu_set_flag(&D->widgets[i], UA_DIRTY);
     }
 }
 

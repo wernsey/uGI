@@ -75,7 +75,7 @@ int init_gui() {
 
     W = ugi_add(D, uw_clear, 0, 0, 0, 0);
     W = ugi_add(D, uw_frame, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    uu_set_attr(W, "label", "Rich Edit Demo");
+    uu_set_attr_s(W, "label", "Rich Edit Demo");
 
 
     W = ugi_add(D, uw_menubar, 0, 10, SCREEN_WIDTH, 0);
@@ -86,7 +86,7 @@ int init_gui() {
         return 0;
 
     W = ugi_add(D, uw_richedit, 2, 12 + 10, SCREEN_WIDTH - 4, SCREEN_HEIGHT - 12 - 2 - 10);
-    uu_set_flag(W, UF_FOCUS);
+    uu_set_flag(W, UA_FOCUS);
     rt_set_text(W, txt);
 
     free(txt);

@@ -14,12 +14,12 @@
 Bitmap *icon;
 
 int button_callback(uWidget *W) {
-    SDL_Log("Widget [%s] Clicked...", uu_get_attr(W, "label"));
+    SDL_Log("Widget [%s] Clicked...", uu_get_attr_s(W, "label"));
     return 1;
 }
 
 int combo_callback(uWidget *W) {
-    SDL_Log("Combo item [%s] selected...", uu_get_attr(W, "value"));
+    SDL_Log("Combo item [%s] selected...", uu_get_attr_s(W, "value"));
     return 1;
 }
 
@@ -32,11 +32,11 @@ void show_popup(uMenu *menu, void *data) {
     uWidget *W = ugi_add(popup, uw_clear_dith, 0,0, 0,0);
     //W = ugi_add(popup, uw_clear_dith, 20 + 5, 20 + 5, SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40);
     W = ugi_add(popup, uw_frame, 20, 20, SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40);
-    uu_set_attr(W, "label", menu->title);
+    uu_set_attr_s(W, "label", menu->title);
 
     W = ugi_add(popup, uw_button, (SCREEN_WIDTH)/2, SCREEN_HEIGHT - 20 - 10 - 3, (SCREEN_WIDTH - 40)/2 - 3, 10);
-    uu_set_attr(W, "label", "Click Me");
-    uu_set_flag(W, UF_FOCUS); //W->flags |= UF_FOCUS;
+    uu_set_attr_s(W, "label", "Click Me");
+    uu_set_flag(W, UA_FOCUS);
 }
 
 const char *test_list(uWidget *W, int i, int *size) {
@@ -120,59 +120,59 @@ int init_gui() {
 
     W = ugi_add(D, uw_clear, 0, 0, 0, 0);
     W = ugi_add(D, uw_frame, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    uu_set_attr(W, "label", "uGI Demo");
+    uu_set_attr_s(W, "label", "uGI Demo");
 
     W = ugi_add(D, uw_menubar, 0, 10, SCREEN_WIDTH, 0);
     uu_set_data(W, mainmenu);
 
     W = ugi_add(D, uw_label, 4, SCREEN_HEIGHT - 6 - 1, SCREEN_WIDTH/2, 6);
-    uu_set_attr(W, "label", "Text Label");
+    uu_set_attr_s(W, "label", "Text Label");
 
     W = ugi_add(D, uw_button, 4, 22, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Button A");
+    uu_set_attr_s(W, "label", "Button A");
     uu_set_action(W, button_callback);
 
     uu_focus(D, W);
 
     W = ugi_add(D, uw_button, SCREEN_WIDTH/2 + 4, 22, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Button B");
+    uu_set_attr_s(W, "label", "Button B");
     uu_set_action(W, button_callback);
 
     W = ugi_add(D, uw_checkbox, 4, 34, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Checkbox 1");
+    uu_set_attr_s(W, "label", "Checkbox 1");
 
     W = ugi_add(D, uw_checkbox, SCREEN_WIDTH/2 + 4, 34, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Checkbox 2");
+    uu_set_attr_s(W, "label", "Checkbox 2");
     uu_set_attr_i(W, "value", 1);
 
     W = ugi_add(D, uw_radio,  4, 46, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Radio 1A");
+    uu_set_attr_s(W, "label", "Radio 1A");
     uu_set_attr_i(W, "group", 1);
     W = ugi_add(D, uw_radio,  4, 58, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Radio 1B");
+    uu_set_attr_s(W, "label", "Radio 1B");
     uu_set_attr_i(W, "value", 1);
     uu_set_attr_i(W, "group", 1);
     W = ugi_add(D, uw_radio,  4, 70, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Radio 1C");
+    uu_set_attr_s(W, "label", "Radio 1C");
     uu_set_attr_i(W, "group", 1);
-    uu_set_flag(W, UF_HIDDEN);
+    uu_set_flag(W, UA_HIDDEN);
 
     W = ugi_add(D, uw_radio,  SCREEN_WIDTH/2 + 4, 46, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Radio 2A");
+    uu_set_attr_s(W, "label", "Radio 2A");
     uu_set_attr_i(W, "value", 1);
     uu_set_attr_i(W, "group", 2);
     W = ugi_add(D, uw_radio,  SCREEN_WIDTH/2 + 4, 58, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Radio 2B");
+    uu_set_attr_s(W, "label", "Radio 2B");
     uu_set_attr_i(W, "group", 2);
     W = ugi_add(D, uw_radio,  SCREEN_WIDTH/2 + 4, 70, SCREEN_WIDTH/2 - 8, 10);
-    uu_set_attr(W, "label", "Radio 2C");
+    uu_set_attr_s(W, "label", "Radio 2C");
     uu_set_attr_i(W, "group", 2);
 
     W = ugi_add(D, uw_slider,  4, 82, SCREEN_WIDTH/2 - 4, 16);
-    uu_set_attr(W, "label", "Slider");
+    uu_set_attr_s(W, "label", "Slider");
 
     W = ugi_add(D, uw_combo, 4, 100, SCREEN_WIDTH/2 - 4, 10);
-    uu_set_attr(W, "value", "Please Choose...");
+    uu_set_attr_s(W, "value", "Please Choose...");
     uu_set_data(W, combomenu);
     uu_set_action(W, combo_callback);
 
@@ -180,7 +180,7 @@ int init_gui() {
     uu_set_data(W, test_list);
 
     W = ugi_add(D, uw_text_area, 4, 112, SCREEN_WIDTH/2 - 4, 40);
-    uu_set_attr(W, "text", "This is a\ntext editing\nwidget");
+    uu_set_attr_s(W, "text", "This is a\ntext editing\nwidget");
 
     W = ugi_add(D, uw_ticker, SCREEN_WIDTH - 11, SCREEN_HEIGHT - 11, 8,8);
 

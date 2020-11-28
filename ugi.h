@@ -77,19 +77,26 @@ uRect uu_get_position(uWidget *W);
 
 ugi_widget_fun uu_get_widget_fun(uWidget *W);
 
-const char *uu_get_attr(uWidget *W, const char *key);
-void uu_set_attr(uWidget *W, const char *key, const char *val);
+uDialog *uu_get_dialog(uWidget *W);
+
+#define UA_DATA        "data"
+#define UA_ACTION      "action"
+#define UA_DIRTY       "dirty"
+#define UA_FOCUS       "focus"
+#define UA_HIDDEN      "hidden"
+#define UA_BACKGROUND  "background"
+#define UA_FOREGROUND  "foreground"
+
+const char *uu_get_attr_s(uWidget *W, const char *key);
+void uu_set_attr_s(uWidget *W, const char *key, const char *val);
 
 void uu_set_attrf(uWidget *W, const char *key, const char *fmt, ...);
 
 void uu_set_attr_i(uWidget *W, const char *key, int val);
 int uu_get_attr_i(uWidget *W, const char *key);
 
-uDialog *uu_get_dialog(uWidget *W);
-
-#define UF_DIRTY "dirty"
-#define UF_FOCUS "focus"
-#define UF_HIDDEN "hidden"
+void uu_set_attr_p(uWidget *W, const char *key, void *p);
+void *uu_get_attr_p(uWidget *W, const char *key);
 
 void uu_set_flag(uWidget *W, const char *key);
 void uu_clear_flag(uWidget *W, const char *key);
