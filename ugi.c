@@ -313,8 +313,10 @@ int uw_clear_dith(uWidget *W, int msg, int param) {
 }
 
 int uw_frame(uWidget *W, int msg, int param) {
-    int x; //, y;
-    if(msg == UM_DRAW) {
+    int x;
+    if(msg == UM_START) {
+        uu_set_attr_i(W, "close-button", 1);
+    } else if(msg == UM_DRAW) {
         unsigned int bg, fg;
         uu_get_color_attrs(W, &bg, &fg);
 
@@ -326,8 +328,10 @@ int uw_frame(uWidget *W, int msg, int param) {
         ud_box(W->x, W->y, W->x + W->w - 1, W->y + 10);
 
         // Close button
-        x = W->x + W->w - 11;
-        ud_box(x + 3, W->y + 3, x + 10 - 3, W->y + 10 - 3);
+        if(uu_get_attr_i(W, "close-button")) {
+            x = W->x + W->w - 11;
+            ud_box(x + 3, W->y + 3, x + 10 - 3, W->y + 10 - 3);
+        }
 
         const char *lbl = uu_get_attr_s(W, "label");
         if(lbl) {
@@ -344,10 +348,12 @@ int uw_frame(uWidget *W, int msg, int param) {
             ud_dither_box(W->x + 10, W->y + 1, W->x + W->w - 11, W->y + 9);
         }
     } else if(msg == UM_CLICK) {
-        x = W->x + W->w - 10;
-        int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
-        if(mx > x && mx < W->x + W->w && my > W->y && my < W->y + 10)
-            return UW_CLOSE;
+        if(uu_get_attr_i(W, "close-button")) {
+            x = W->x + W->w - 10;
+            int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
+            if(mx > x && mx < W->x + W->w && my > W->y && my < W->y + 10)
+                return UW_CLOSE;
+        }
     }
     return UW_OK;
 }
@@ -1444,6 +1450,10 @@ uDialog *ugi_start() {
     dialog_stack[d_top] = D;
     d_top++;
     return D;
+}
+
+int ugi_get_top() {
+    return d_top;
 }
 
 uWidget *ugi_add(uDialog *D, ugi_widget_fun fun, int x, int y, int w, int h) {

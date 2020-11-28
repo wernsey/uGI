@@ -155,6 +155,7 @@ int uw_timer(uWidget *W, int msg, int param);
 
 /* uGI API itself */
 uDialog *ugi_start();
+int ugi_get_top();
 uWidget *ugi_add(uDialog *D, ugi_widget_fun fun, int x, int y, int w, int h);
 uWidget *ugi_get_by_id(uDialog *D, const char *id);
 void ugi_end();
