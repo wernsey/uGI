@@ -8,3 +8,6 @@
 extern int init_gui();
 
 extern void deinit_gui();
+
+void dlg_message(const char *message);
+int dlg_yes_no(const char *prompt);

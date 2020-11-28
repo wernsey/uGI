@@ -27,6 +27,12 @@ void menu_item(uMenu *menu, void *data) {
     SDL_Log("Menu Item [%s] selected", menu->title);
 }
 
+void menu_item_dialog_demo(uMenu *menu, void *data) {
+    int yes = dlg_yes_no("This is an\nexample of\na yes/no dialog box");
+    if(yes)
+        dlg_message("You clicked the 'Yes' button");
+}
+
 void show_popup(uMenu *menu, void *data) {
     uDialog *popup = ugi_start();
     uWidget *W = ugi_add(popup, uw_clear_dith, 0,0, 0,0);
@@ -88,7 +94,7 @@ uMenu filemenu[] = {
 uMenu mainmenu[] = {
     {"File", NULL, filemenu, NULL },
     {"Edit", NULL, editmenu, NULL },
-    {"View", show_popup, NULL, NULL},
+    {"DiaDemo", menu_item_dialog_demo, NULL, NULL},
     {"Help", show_popup, NULL, NULL},
     {NULL, NULL, NULL, NULL},
 };
