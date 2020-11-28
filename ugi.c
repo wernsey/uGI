@@ -38,23 +38,28 @@ unsigned int ugi_get_default_background() {
     return ugc_background;
 }
 
+enum uAttrType {
+    STRING, POINTER, INTEGER
+};
+
 typedef struct {
-    char *key, *val;
+    enum uAttrType type;
+    char *key;
+    union {
+        char *s;
+        int i;
+        void *p;
+    };
 } uAttr;
 
 struct uWidget {
     ugi_widget_fun fun;
     int x, y, w, h;
 
-    unsigned int flags;
-
     void *font;
 
     int aa, n;
     uAttr *attrs;
-
-    void *action;
-    void *data;
 
     struct uDialog *D;
     int idx;
@@ -103,39 +108,63 @@ ugi_widget_fun uu_get_widget_fun(uWidget *W) {
     return W->fun;
 }
 
-const char *uu_get_attr(uWidget *W, const char *key) {
+static uAttr *attr_find(uWidget *W, const char *key) {
     int i;
     for(i = 0; i < W->n; i++) {
-        if(!strcmp(W->attrs[i].key, key))
-            return W->attrs[i].val;
+        if(!strcmp(W->attrs[i].key, key)) {
+            return &W->attrs[i];
+        }
     }
     return NULL;
 }
 
-// Be careful calling this in a UM_CHANGE, because
-// it will send a UM_CHANGE again, leading to recursion.
-void uu_set_attr(uWidget *W, const char *key, const char *val) {
+const char *uu_get_attr(uWidget *W, const char *key) {
+    uAttr *a = attr_find(W, key);
+    if(!a) return NULL;
+    if(a->type == STRING)
+        return a->s;
+    else if(a->type == INTEGER) {
+        char buffer[16];
+        snprintf(buffer, sizeof buffer, "%d", a->i);
+        a->type = STRING;
+        a->s = strdup(buffer);
+        return a->s;
+    }
+    return NULL;
+}
+
+static void attr_free_val(uAttr *a) {
+    if(a->type == STRING)
+        free(a->s);
+}
+
+static uAttr *find_attr_or_new(uWidget *W, const char *key) {
     uAttr *A = NULL;
     int i;
     for(i = 0; i < W->n; i++) {
         if(!strcmp(W->attrs[i].key, key)) {
             A = &W->attrs[i];
-            free(A->val);
-            break;
+            attr_free_val(A);
+            return A;
         }
     }
-    if(!A) {
-        if(W->n == W->aa) {
-            W->aa <<= 1;
-            W->attrs = realloc(W->attrs, W->aa * sizeof *W->attrs);
-        }
-        i = W->n++;
-        A = &W->attrs[i];
-        A->key = strdup(key);
+    if(W->n == W->aa) {
+        W->aa <<= 1;
+        W->attrs = realloc(W->attrs, W->aa * sizeof *W->attrs);
     }
-    assert(A);
-    A->val = strdup(val);
-    widget_msg(W, UM_CHANGE, i);
+    i = W->n++;
+    A = &W->attrs[i];
+    A->key = strdup(key);
+    return A;
+}
+
+// Be careful calling this in a UM_CHANGE, because
+// it will send a UM_CHANGE again, leading to recursion.
+void uu_set_attr(uWidget *W, const char *key, const char *val) {
+    uAttr *A = find_attr_or_new(W, key);
+    A->type = STRING;
+    A->s = strdup(val);
+    //widget_msg(W, UM_CHANGE, 0);
 }
 
 void uu_set_attrf(uWidget *W, const char *key, const char *fmt, ...) {
@@ -148,47 +177,68 @@ void uu_set_attrf(uWidget *W, const char *key, const char *fmt, ...) {
 }
 
 void uu_set_attr_i(uWidget *W, const char *key, int val) {
-    char buf[20];
-    snprintf(buf, sizeof buf - 1, "%d", val);
-    uu_set_attr(W, key, buf);
+    uAttr *A = find_attr_or_new(W, key);
+    A->type = INTEGER;
+    A->i = val;
+    //widget_msg(W, UM_CHANGE, 0);
 }
 
 int uu_get_attr_i(uWidget *W, const char *key) {
-    const char *sval = uu_get_attr(W, key);
-    if(sval) return atoi(sval);
+    uAttr *a = attr_find(W, key);
+    if(!a) return 0;
+    if(a->type == INTEGER)
+        return a->i;
+    else if(a->type == STRING) {
+        return atoi(a->s);
+    }
     return 0;
+}
+
+void uu_set_attr_p(uWidget *W, const char *key, void *p) {
+    uAttr *A = find_attr_or_new(W, key);
+    A->type = POINTER;
+    A->p = p;
+    //widget_msg(W, UM_CHANGE, 0);
+}
+
+void *uu_get_attr_p(uWidget *W, const char *key) {
+    uAttr *a = attr_find(W, key);
+    if(!a) return NULL;
+    if(a->type != POINTER)
+        return NULL;
+    return a->p;
 }
 
 uDialog *uu_get_dialog(uWidget *W) {
     return W->D;
 }
 
-void uu_set_flag(uWidget *W, unsigned int flag) {
-    W->flags |= flag;
+void uu_set_flag(uWidget *W, const char *key) {
+    uu_set_attr_i(W, key, 1);
 }
 
-void uu_clear_flag(uWidget *W, unsigned int flag) {
-    W->flags &= ~flag;
+void uu_clear_flag(uWidget *W, const char *key) {
+    uu_set_attr_i(W, key, 0);
 }
 
-int uu_get_flag(uWidget *W, unsigned int flag) {
-    return !!(W->flags & flag);
+int uu_get_flag(uWidget *W, const char *key) {
+    return uu_get_attr_i(W, key);
 }
 
 void uu_set_data(uWidget *W, void *val) {
-    W->data = val;
+    uu_set_attr_p(W, "data", val);
 }
 
 void *uu_get_data(uWidget *W) {
-    return W->data;
+    return uu_get_attr_p(W, "data");
 }
 
 void uu_set_action(uWidget *W, void *val) {
-    W->action = val;
+    uu_set_attr_p(W, "action", val);
 }
 
 void *uu_get_action(uWidget *W) {
-    return W->action;
+    return uu_get_attr_p(W, "action");
 }
 
 void uu_set_font(uWidget *W, void *font) {
@@ -203,14 +253,15 @@ static int widget_msg(uWidget *W, int msg, int param) {
     if(!W->fun) return UW_OK;
     int r = (*W->fun)(W, msg, param);
     if(r == UW_HANDLED || r == UW_DIRTY)
-        W->flags |= UF_DIRTY;
+        uu_set_flag(W, UF_DIRTY);
     return r;
 }
 
 void uu_focus(uDialog *D, uWidget *W) {
     int j;
     for(j = 0; j < D->n; j++) {
-        if(D->widgets[j].flags & UF_FOCUS) {
+        uWidget *W = &D->widgets[j];
+        if(uu_get_flag(W, UF_FOCUS)) {
             widget_msg(&D->widgets[j], UM_LOSEFOCUS, 0);
         }
     }
@@ -425,10 +476,9 @@ int uw_button(uWidget *W, int msg, int param) {
         }
 
     } else if(msg == UM_CLICK) {
-        if(W->action) {
-            ugi_widget_action cb = W->action;
+        ugi_widget_action cb = uu_get_action(W);
+        if(cb)
             cb(W);
-        }
         return UW_HANDLED;
     } else if(msg == UM_KEY) {
         if(param == UK_UP) {
@@ -447,10 +497,10 @@ int uw_button(uWidget *W, int msg, int param) {
     } else if(msg == UM_WANTFOCUS) {
         return UW_WANTFOCUS;
     } else if(msg == UM_GETFOCUS) {
-        W->flags = W->flags | UF_FOCUS;
+        uu_set_flag(W, UF_FOCUS);
         return UW_HANDLED;
     } else if(msg == UM_LOSEFOCUS) {
-        W->flags = W->flags & ~UF_FOCUS;
+        uu_clear_flag(W, UF_FOCUS);
         return UW_HANDLED;
     } else if(msg == UM_CHANGE) {
         return UW_DIRTY;
@@ -490,10 +540,9 @@ int uw_checkbox(uWidget *W, int msg, int param) {
     } else if(msg == UM_CLICK) {
         int v = uu_get_attr_i(W, "value");
         uu_set_attr_i(W, "value", !v);
-        if(W->action) {
-            ugi_widget_action cb = W->action;
+        ugi_widget_action cb = uu_get_action(W);
+        if(cb)
             cb(W);
-        }
         return UW_HANDLED;
     } else {
         return uw_button(W, msg, param);
@@ -544,10 +593,10 @@ int uw_radio(uWidget *W, int msg, int param) {
             ugi_message(UM_RADIO, uu_get_attr_i(W, "group"));
             uu_set_attr_i(W, "value", 1);
         }
-        if(W->action) {
-            ugi_widget_action cb = W->action;
+        ugi_widget_action cb = uu_get_action(W);
+        if(cb)
             cb(W);
-        }
+
         return UW_HANDLED;
     } else {
         return uw_button(W, msg, param);
@@ -558,7 +607,7 @@ int uw_radio(uWidget *W, int msg, int param) {
 int uw_slider(uWidget *W, int msg, int param) {
 
     int min, max, val;
-    ugi_widget_action cb = W->action;
+    ugi_widget_action cb = uu_get_action(W);
     if(msg == UM_START) {
         uu_set_attr_i(W, "minimum", 0);
         uu_set_attr_i(W, "maximum", 100);
@@ -618,10 +667,9 @@ int uw_slider(uWidget *W, int msg, int param) {
         if(val > max) val = max;
 
         uu_set_attr_i(W, "value", val);
-        if(W->action) {
-            ugi_widget_action cb = W->action;
+        ugi_widget_action cb = uu_get_action(W);
+        if(cb)
             cb(W);
-        }
         return UW_HANDLED;
     } else if(msg == UM_CHAR) {
         if(param == '\t') {
@@ -816,7 +864,7 @@ int uw_text_input(uWidget *W, int msg, int param) {
             int nblink = (elapsed >> 8) & 0x01;
             if(blink ^ nblink) {
                 uu_set_attr_i(W, "blink", nblink);
-                return UW_OK;
+                return UW_DIRTY;
             }
         }
     } else {
@@ -873,7 +921,7 @@ int uu_click_scrollbar(int mx, int my, int bx, int by, int bw, int bh, int scrol
 
 int uw_listbox(uWidget *W, int msg, int param) {
 
-    ugi_widget_list_fun list = (ugi_widget_list_fun)W->data;
+    ugi_widget_list_fun list = uu_get_data(W);
     int ch = ud_text_height(W->font, " ");
 
     if(msg == UM_START) {
@@ -934,10 +982,9 @@ int uw_listbox(uWidget *W, int msg, int param) {
             if(y > n - 1) y = n - 1;
             uu_set_attr_i(W, "index", y);
         }
-        if(W->action) {
-            ugi_widget_action cb = W->action;
+        ugi_widget_action cb = uu_get_action(W);
+        if(cb)
             cb(W);
-        }
         return UW_HANDLED;
     } else if(msg == UM_CHAR) {
         if(param == '\t') {
@@ -979,10 +1026,9 @@ int uw_listbox(uWidget *W, int msg, int param) {
                 scroll = 0;
             uu_set_attr_i(W, "scroll", scroll);
         }
-        if(W->action) {
-            ugi_widget_action cb = W->action;
+        ugi_widget_action cb = uu_get_action(W);
+        if(cb)
             cb(W);
-        }
         return UW_HANDLED;
     } else {
         return uw_button(W, msg, param);
@@ -1031,10 +1077,9 @@ void uu_combo_menu_action(struct uMenu *menu, void *udata) {
     uWidget *W = udata;
     assert(W->fun == uw_combo);
     uu_set_attr(W, "value", menu->title);
-    if(W->action) {
-        ugi_widget_action cb = W->action;
+    ugi_widget_action cb = uu_get_action(W);
+    if(cb)
         cb(W);
-    }
 }
 
 int uu_count_lines(const char *text) {
@@ -1305,7 +1350,7 @@ int uw_text_area(uWidget *W, int msg, int param) {
             int nblink = (elapsed >> 8) & 0x01;
             if(blink ^ nblink) {
                 uu_set_attr_i(W, "blink", nblink);
-                return UW_OK;
+                return UW_DIRTY;
             }
         }
     } else {
@@ -1340,7 +1385,7 @@ int uw_ticker(uWidget *W, int msg, int param) {
         int elapsed = uu_get_attr_i(W, "time") + param;
         uu_set_attr_i(W, "time", elapsed);
         if((elapsed >> 7) & 0x01)
-            W->flags |= UF_DIRTY;
+            uu_set_flag(W, UF_DIRTY);
     }
     return UW_OK;
 }
@@ -1355,10 +1400,9 @@ int uw_timer(uWidget *W, int msg, int param) {
         int after = uu_get_attr_i(W, "after");
         if(elapsed > after) {
             int result = UW_OK;
-            if(W->action) {
-                ugi_widget_action callback = W->action;
-                result = callback(W);
-            }
+            ugi_widget_action cb = uu_get_action(W);
+            if(cb)
+                cb(W);
             uu_set_attr_i(W, "time", 0);
             return result;
         } else {
@@ -1426,7 +1470,7 @@ uWidget *ugi_add(uDialog *D, ugi_widget_fun fun, int x, int y, int w, int h) {
     W->n = 0;
     W->attrs = calloc(W->aa, sizeof *W->attrs);
 
-    W->flags |= UF_DIRTY;
+    uu_set_flag(W, UF_DIRTY);
 
     W->font = ugi_font;
 
@@ -1463,7 +1507,7 @@ static void dialog_dispose_all() {
             widget_msg(W, UM_END, 0);
             for(j = 0; j < W->n; j++) {
                 free(W->attrs[j].key);
-                free(W->attrs[j].val);
+                attr_free_val(&W->attrs[j]);
             }
             free(W->attrs);
         }
@@ -1677,7 +1721,7 @@ void ugi_repaint_all() {
     if(d_top > 0) {
         uDialog *D = dialog_stack[d_top - 1];
         for(i = 0; i < D->n; i++)
-            D->widgets[i].flags |= UF_DIRTY;
+           uu_set_flag(&D->widgets[i], UF_DIRTY);
     }
 }
 

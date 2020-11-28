@@ -357,7 +357,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
             int nblink = (elapsed >> 8) & 0x01;
             if(blink ^ nblink) {
                 uu_set_attr_i(W, "blink", nblink);
-                return UW_OK;
+                return UW_DIRTY;
             }
         }
     } else {

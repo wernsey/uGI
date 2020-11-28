@@ -46,10 +46,6 @@ typedef enum {
     UK_DELETE,
 } uKeyCode;
 
-#define UF_DIRTY 1
-#define UF_FOCUS 2
-#define UF_HIDDEN 4
-
 struct uWidget;
 typedef int (*ugi_widget_fun)(struct uWidget *, int msg, int param);
 
@@ -91,9 +87,13 @@ int uu_get_attr_i(uWidget *W, const char *key);
 
 uDialog *uu_get_dialog(uWidget *W);
 
-void uu_set_flag(uWidget *W, unsigned int flag);
-void uu_clear_flag(uWidget *W, unsigned int flag);
-int uu_get_flag(uWidget *W, unsigned int flag);
+#define UF_DIRTY "dirty"
+#define UF_FOCUS "focus"
+#define UF_HIDDEN "hidden"
+
+void uu_set_flag(uWidget *W, const char *key);
+void uu_clear_flag(uWidget *W, const char *key);
+int uu_get_flag(uWidget *W, const char *key);
 
 void uu_set_data(uWidget *W, void *val);
 void *uu_get_data(uWidget *W);
