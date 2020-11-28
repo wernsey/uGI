@@ -5,7 +5,7 @@
 
 #include "gap.h"
 
-#define DEFAULT_SIZE    4
+#define DEFAULT_SIZE    256
 
 #if 1
 #define TRACE(x)

@@ -19,7 +19,7 @@ enum {
 
 char rt_char(uWidget *W, unsigned int i);
 
-typedef void (*lexer_fun)(uWidget *W, char *color, int len);
+typedef void (*lexer_fun)(uWidget *W, unsigned char *color, int len);
 
 int uw_richedit(uWidget *W, int msg, int param);
 
