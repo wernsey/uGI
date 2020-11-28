@@ -3,9 +3,7 @@ I didn't set out initially to create a text editor, so
 please excuse me that the code in here is a bit rough.
 
 TODO:
-    * If you click on a line containing tabs it really messes up the cursor position
     * You only need to run the lexer on insertions and deletions.
-    * clicking on the scrollbar does nothing
 
 There are a couple of features I'd like to see:
    - Auto-indent when pressing enter
@@ -240,23 +238,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
             ud_fill_box(x, y - 2, x+2, y + 8);
         }
 
-        /*
-        ud_dither_box(pos.x + pos.w - 6, pos.y + 1, pos.x + pos.w, pos.y + pos.h);
-
-        int nlf = pos.h/(ch + 2) - 1;
-        if(nlf < n) {
-            int nl = n - nlf;
-            int ph = pos.h * pos.h / ((ch + 2) * n);
-            int pp = scroll * (pos.h - ph) / nl;
-            if(ph > pos.h - 2) {
-                ph = pos.h - 1;
-                pp = 0;
-            }
-            x = pos.x + pos.w - 6;
-            ud_fill_box(x, pos.y + pp + 1, x + 6 - 2, pos.y + pp + ph - 2);
-        }
-        */
-       uu_draw_scrollbar(pos.x + pos.w - 6, pos.y + 1, 6, pos.h-2, scroll, n, ch + 2);
+        uu_draw_scrollbar(pos.x + pos.w - 6, pos.y + 1, 6, pos.h-2, scroll, n, ch + 2);
 
         ud_set_color(fg);
         if(uu_get_flag(W, UF_FOCUS))
@@ -266,33 +248,42 @@ int uw_richedit(uWidget *W, int msg, int param) {
 
     } else if(msg == UM_CLICK) {
 
+        GapBuffer *g = uu_get_data(W);
         int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
         int scroll = uu_get_attr_i(W, "scroll");
-
-        GapBuffer *g = uu_get_data(W);
-        int line = (my - pos.y)/(ch + 2) + scroll;
-
         unsigned int nl = gb_lines(g);
-        if(line >= nl)
-            line = nl;
 
-        unsigned int ll = gb_line_len(g, line);
-        int col = (mx - pos.x - 2)/(cw);
+        int x = pos.x + pos.w - 6 - 1;
+        if(mx > x) {
 
-        //SDL_Log("Click: line: %d col: %d/%u", line, col, ll);
-        if(col > ll)
-            col = ll;
+            scroll = uu_click_scrollbar(mx, my, pos.x + pos.w - 6, pos.y, 6, pos.h, scroll, nl, ch + 2);
+            uu_set_attr_i(W, "scroll", scroll);
 
-        unsigned int p = gb_start_of_line(g, line) + col;
-        gb_set_cursor(g, p);
+        } else {
+            int line = (my - pos.y)/(ch + 2) + scroll;
+
+            if(line >= nl)
+                line = nl;
+
+            unsigned int p = gb_start_of_line(g, line);
+            int col = 0;
+            while(col < (mx - pos.x - 2)/cw) {
+                char c = gb_char(g, p);
+                if(c == '\n')
+                    break;
+                else if(c == '\t')
+                    col += 4;
+                else
+                    col++;
+                p++;
+            }
+
+            gb_set_cursor(g, p);
+        }
 
         uu_set_attr_i(W, "time", 1<<8); /* shows the cursor */
         return UW_HANDLED;
     } else if(msg == UM_KEY || msg ==  UM_CHAR) {
-
-        //int cursor, line, col;
-        //int scroll = uu_get_attr_i(W, "scroll");
-        //int len, i;
 
         GapBuffer *g = uu_get_data(W);
 

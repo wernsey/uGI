@@ -268,7 +268,7 @@ unsigned int gb_get_column(GapBuffer *g) {
 unsigned int gb_get_line(GapBuffer *g) {
     unsigned int r = 0, i = g->s;
     while(i > 0) {
-        if(g->b[i] == '\n')
+        if(g->b[i-1] == '\n')
             r++;
         i--;
     }
