@@ -17,11 +17,9 @@ enum {
     LIGHT_GREY
 };
 
-#ifndef GAP_H
-typedef struct GapBuffer GapBuffer;
-#endif
+char rt_char(uWidget *W, unsigned int i);
 
-typedef void (*lexer_fun)(GapBuffer *g, char *color, int len);
+typedef void (*lexer_fun)(uWidget *W, char *color, int len);
 
 int uw_richedit(uWidget *W, int msg, int param);
 

@@ -4,7 +4,7 @@ please excuse me that the code in here is a bit rough.
 
 TODO:
     * If you click on a line containing tabs it really messes up the cursor position
-    * The lexer API needs some work
+    * You only need to run the lexer on insertions and deletions.
     * clicking on the scrollbar does nothing
 
 There are a couple of features I'd like to see:
@@ -57,14 +57,19 @@ static const char *keywords[] = {
     NULL
 };
 
-static void dummy_lexer(GapBuffer *g, char *colors, int len) {
+char rt_char(uWidget *W, unsigned int i) {
+    GapBuffer *g = uu_get_data(W);
+    return gb_char(g, i);
+}
+
+static void dummy_lexer(uWidget *W, char *colors, int len) {
     int i, sol = 1;
     for(i = 0; i < len; i++) {
-        char c = gb_char(g, i);
+        char c = rt_char(W, i);
         if(sol) {
-            while(i < len - 1 && isspace(c)) c = gb_char(g, ++i);
+            while(i < len - 1 && isspace(c)) c = rt_char(W, ++i);
             if(i < len && c == '#') {
-                while(i < len && gb_char(g, i) != '\n')
+                while(i < len && rt_char(W, i) != '\n')
                     colors[i++] = GREEN;
                 continue;
             }
@@ -73,42 +78,42 @@ static void dummy_lexer(GapBuffer *g, char *colors, int len) {
         if(strchr("\"'", c)) {
             char term = c;
             colors[i] = RED;
-            while((c = gb_char(g, ++i)) && c != term && c != '\n') {
+            while((c = rt_char(W, ++i)) && c != term && c != '\n') {
                 if(c == '\\') {
                     colors[i] = RED;
-                    c = gb_char(g, i++);
+                    c = rt_char(W, i++);
                 }
                 colors[i] = RED;
             }
             colors[i] = RED;
         }
-         else if(c == '/' && gb_char(g, i + 1) == '/') {
+         else if(c == '/' && rt_char(W, i + 1) == '/') {
             colors[i++] = PURPLE;
             colors[i++] = PURPLE;
-            while((c = gb_char(g, i)) && c != '\n') {
+            while((c = rt_char(W, i)) && c != '\n') {
                 colors[i++] = PURPLE;
             }
         }
-        else if(c == '/' && gb_char(g, i + 1) == '*') {
+        else if(c == '/' && rt_char(W, i + 1) == '*') {
             colors[i++] = PURPLE;
             colors[i++] = PURPLE;
-            while((c=gb_char(g,i)) && !(c == '*' && gb_char(g,i+1) == '/'))
+            while((c=rt_char(W,i)) && !(c == '*' && rt_char(W,i+1) == '/'))
                 colors[i++] = PURPLE;
             colors[i++] = PURPLE;
-            colors[i] = PURPLE;//LIGHT_GREY;
+            if(i < len)
+                colors[i] = PURPLE;
         }
         else if(isalpha(c) || c == '_') {
             int s = i, k = LIGHT_BLUE, j=0;
 
             char kbuf[12];
-            while((c = gb_char(g, i)) && (isalnum(c) || c == '_')) {
+            while((c = rt_char(W, i)) && (isalnum(c) || c == '_')) {
                 if(j < sizeof kbuf - 1)
                     kbuf[j++] = c;
                 i++;
             }
             kbuf[j] = '\0';
 
-            int len = i - s;
             for(j = 0; keywords[j]; j++) {
                 if(!strcmp(keywords[j], kbuf)) {
                     k = CYAN;
@@ -121,13 +126,13 @@ static void dummy_lexer(GapBuffer *g, char *colors, int len) {
             i--;
         }
         else if(isdigit(c)) {
-            if(c == '0' && tolower(gb_char(g, i+1) == 'x')) {
+            if(c == '0' && tolower(rt_char(W, i+1) == 'x')) {
                 colors[i++] = ORANGE;
                 colors[i++] = ORANGE;
-                while((c = gb_char(g, i)) && strchr("1234567890abcdef", tolower(c)))
+                while((c = rt_char(W, i)) && strchr("1234567890abcdef", tolower(c)))
                     colors[i++] = ORANGE;
             } else {
-                while((c = gb_char(g, i)) && strchr("1234567890.eE", c))
+                while((c = rt_char(W, i)) && strchr("1234567890.eE", c))
                     colors[i++] = ORANGE;
             }
             i--;
@@ -189,7 +194,7 @@ int uw_richedit(uWidget *W, int msg, int param) {
 
         lexer_fun lexer = uu_get_action(W);
         if(lexer)
-            lexer(g, colors, len);
+            lexer(W, colors, len);
 
         int x = pos.x + 2;
         int y = pos.y + 2;
