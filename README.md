@@ -68,9 +68,9 @@ Widgets may have attributes that the widget function might use to control the wi
 
     uu_set_attr_s(W, "label", "Button A");
 
-Depending on the widget, it may also need an _action callback_ function that contains a pointer to a function that should be called when the widget is clicked or changed or manipulated (depending on the widget):
+Depending on the widget, it may also need a callback function that contains a pointer to a function that should be called when the widget is clicked or changed or manipulated (depending on the widget):
 
-    uu_set_action(W, button_callback);
+    uu_set_attr_p(W, "click", button_callback);
 
 The `button_callback` function in this example must match the `ugi_widget_action` prototype, and will be called when the button is clicked.
 
@@ -120,8 +120,10 @@ Use the [GitHub issues](https://github.com/wernsey/uGI/issues) page for bug repo
 Future plans include:
 
 * File dialog boxes
-* Yes/No/Cancel type dialog boxes
+* The menus still need keyboard controls
 * Integration with the [Lua][] scripting language
+* Minor TODOs:
+  * not all the widgets respect the "disabled" attribute
 
 [Lua]: http://www.lua.org
 

@@ -45,7 +45,7 @@ void show_popup(uMenu *menu, void *data) {
     uu_set_flag(W, UA_FOCUS);
 }
 
-const char *test_list(uWidget *W, int i, int *size) {
+static const char *test_list(uWidget *W, int i, int *size) {
     static const char *list[] = {"foo", "bar", "baz", "fred", "quux", "blah", "alice", "bob", "carol", "dave", "eve", "frank", "gary", "harry", "iggy"};
     //static const char *list[] = {"foo", "bar", "baz"};
     if(i < 0) {
@@ -136,13 +136,13 @@ int init_gui() {
 
     W = ugi_add(D, uw_button, 4, 22, SCREEN_WIDTH/2 - 8, 10);
     uu_set_attr_s(W, "label", "Button A");
-    uu_set_action(W, button_callback);
+    uu_set_attr_p(W, UA_CLICK, button_callback);
 
     uu_focus(D, W);
 
     W = ugi_add(D, uw_button, SCREEN_WIDTH/2 + 4, 22, SCREEN_WIDTH/2 - 8, 10);
     uu_set_attr_s(W, "label", "Button B");
-    uu_set_action(W, button_callback);
+    uu_set_attr_p(W, UA_CLICK, button_callback);
 
     W = ugi_add(D, uw_checkbox, 4, 34, SCREEN_WIDTH/2 - 8, 10);
     uu_set_attr_s(W, "label", "Checkbox 1");
@@ -180,10 +180,17 @@ int init_gui() {
     W = ugi_add(D, uw_combo, 4, 100, SCREEN_WIDTH/2 - 4, 10);
     uu_set_attr_s(W, "value", "Please Choose...");
     uu_set_data(W, combomenu);
-    uu_set_action(W, combo_callback);
+    uu_set_attr_p(W, UA_CHANGE, combo_callback);
 
     W = ugi_add(D, uw_listbox, SCREEN_WIDTH/2 + 4, 100, SCREEN_WIDTH/2 - 8, 52);
-    uu_set_data(W, test_list);
+#if 0
+    uu_set_attr_p(W, "list-function", test_list);
+#else
+    static const char *list[] = {"alice", "bob", "carol", NULL};
+    uu_set_attr_p(W, "list", list);
+
+    (void)test_list;
+#endif
 
     W = ugi_add(D, uw_text_area, 4, 112, SCREEN_WIDTH/2 - 4, 40);
     uu_set_attr_s(W, "text", "This is a\ntext editing\nwidget");

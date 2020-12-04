@@ -57,12 +57,10 @@ struct uWidget {
     int x, y, w, h;
 
     void *font;
+    struct uDialog *D;
 
     int aa, n;
     uAttr *attrs;
-
-    struct uDialog *D;
-    int idx;
 };
 
 struct uDialog {
@@ -226,14 +224,6 @@ void uu_set_data(uWidget *W, void *val) {
 
 void *uu_get_data(uWidget *W) {
     return uu_get_attr_p(W, UA_DATA);
-}
-
-void uu_set_action(uWidget *W, void *val) {
-    uu_set_attr_p(W, UA_ACTION, val);
-}
-
-void *uu_get_action(uWidget *W) {
-    return uu_get_attr_p(W, UA_ACTION);
 }
 
 void uu_set_font(uWidget *W, void *font) {
@@ -477,7 +467,7 @@ int uw_button(uWidget *W, int msg, int param) {
         }
 
     } else if(msg == UM_CLICK) {
-        ugi_widget_action cb = uu_get_action(W);
+        ugi_widget_action cb = uu_get_attr_p(W, UA_CLICK);
         if(cb)
             cb(W);
         return UW_HANDLED;
@@ -541,7 +531,7 @@ int uw_checkbox(uWidget *W, int msg, int param) {
     } else if(msg == UM_CLICK) {
         int v = uu_get_attr_i(W, "value");
         uu_set_attr_i(W, "value", !v);
-        ugi_widget_action cb = uu_get_action(W);
+        ugi_widget_action cb = uu_get_attr_p(W, UA_CLICK);
         if(cb)
             cb(W);
         return UW_HANDLED;
@@ -594,7 +584,7 @@ int uw_radio(uWidget *W, int msg, int param) {
             ugi_message(UM_RADIO, uu_get_attr_i(W, "group"));
             uu_set_attr_i(W, "value", 1);
         }
-        ugi_widget_action cb = uu_get_action(W);
+        ugi_widget_action cb = uu_get_attr_p(W, UA_CLICK);
         if(cb)
             cb(W);
 
@@ -607,8 +597,8 @@ int uw_radio(uWidget *W, int msg, int param) {
 
 int uw_slider(uWidget *W, int msg, int param) {
 
+    ugi_widget_action cb = uu_get_attr_p(W, UA_CLICK);
     int min, max, val;
-    ugi_widget_action cb = uu_get_action(W);
     if(msg == UM_START) {
         uu_set_attr_i(W, "minimum", 0);
         uu_set_attr_i(W, "maximum", 100);
@@ -668,7 +658,6 @@ int uw_slider(uWidget *W, int msg, int param) {
         if(val > max) val = max;
 
         uu_set_attr_i(W, "value", val);
-        ugi_widget_action cb = uu_get_action(W);
         if(cb)
             cb(W);
         return UW_HANDLED;
@@ -748,6 +737,8 @@ int uw_text_input(uWidget *W, int msg, int param) {
     int cw = ud_text_width(W->font, " ");
     int ch = ud_text_height(W->font, " ");
 
+    ugi_widget_action cb = uu_get_attr_p(W, UA_CHANGE);
+
     if(msg == UM_START) {
         uu_set_attr_s(W, "text", "");
         uu_set_attr_i(W, "cursor", 0);
@@ -774,13 +765,16 @@ int uw_text_input(uWidget *W, int msg, int param) {
         int y = W->y + (W->h - ch) / 2;
         ud_text(W->x + 2, y, text);
 
-        int blink = uu_get_attr_i(W, "blink");
-
-        if(blink && uu_get_flag(W, UA_FOCUS)) {
-            ud_fill_box(W->x + cursor*cw + 2, W->y, W->x + cursor*cw + 4, W->y + W->h - 1);
+        if(!uu_get_attr_i(W, UA_DISABLED)) {
+            int blink = uu_get_attr_i(W, "blink");
+            if(blink && uu_get_flag(W, UA_FOCUS)) {
+                ud_fill_box(W->x + cursor*cw + 2, W->y, W->x + cursor*cw + 4, W->y + W->h - 1);
+            }
         }
         uu_unclip();
     } else if(msg == UM_CLICK) {
+        if(uu_get_attr_i(W, UA_DISABLED))
+            return UW_OK;
         int mx = (param >> 16) & 0xFFFF;
         int cursor = (mx - W->x - 2)/cw;
         const char *text = uu_get_attr_s(W, "text");
@@ -791,6 +785,10 @@ int uw_text_input(uWidget *W, int msg, int param) {
         uu_set_attr_i(W, "cursor", cursor);
         return UW_HANDLED;
     } else if(msg == UM_KEY || msg ==  UM_CHAR) {
+
+        if(uu_get_attr_i(W, UA_DISABLED))
+            return UW_OK;
+
         const char *text = uu_get_attr_s(W, "text");
         int cursor = uu_get_attr_i(W, "cursor");
         int len;
@@ -822,10 +820,13 @@ int uw_text_input(uWidget *W, int msg, int param) {
                         free(buffer);
                     }
                 } break;
+                break;
             }
         } else {
 
             if(param == '\t' || param == '\n' || param == '\r') {
+                if(cb)
+                    cb(W);
                 if(ud_get_key_state(UK_SHIFT))
                     return UW_UNFOCUS_PREV;
                 return UW_UNFOCUS;
@@ -856,6 +857,11 @@ int uw_text_input(uWidget *W, int msg, int param) {
             }
 
         }
+        return UW_HANDLED;
+    } else if(msg == UM_LOSEFOCUS) {
+        if(cb)
+            cb(W);
+        uu_clear_flag(W, UA_FOCUS);
         return UW_HANDLED;
     } else if(msg == UM_TICK) {
         if(uu_get_flag(W, UA_FOCUS)) {
@@ -922,8 +928,18 @@ int uu_click_scrollbar(int mx, int my, int bx, int by, int bw, int bh, int scrol
 
 int uw_listbox(uWidget *W, int msg, int param) {
 
-    ugi_widget_list_fun list = uu_get_data(W);
+    const char **list_list = uu_get_attr_p(W, "list");
+    int n = 0;
+    if(list_list) {
+        for(n = 0; list_list[n]; n++);
+    }
+    ugi_widget_list_fun list_fun = uu_get_attr_p(W, "list-function");
+    if(!list_list && list_fun)
+        list_fun(W, -1, &n);
+
     int ch = ud_text_height(W->font, " ");
+
+    ugi_widget_action cb = uu_get_attr_p(W, UA_CHANGE);
 
     if(msg == UM_START) {
         uu_set_attr_i(W, "index", 0);
@@ -943,23 +959,30 @@ int uw_listbox(uWidget *W, int msg, int param) {
 
         ud_box(W->x, W->y, W->x + W->w - 1, W->y + W->h - 1);
 
-        int i, n, y;
+        int i, y;
 
         int idx = uu_get_attr_i(W, "index");
         int scroll = uu_get_attr_i(W, "scroll");
 
-        if(!list) return UW_OK;
-        list(W, -1, &n);
+        if(!n)
+            return UW_OK;
+
         ud_clip(W->x, W->y, W->x + W->w, W->y + W->h);
         for(i = scroll, y = 2; i < n && y < W->h; i++, y += 8) {
             if(i == idx) {
                 ud_set_color(fg);
                 ud_fill_box(W->x + 1, W->y + y - 1, W->x + W->w - 6 - 1, W->y + y + 8 - 2);
                 ud_set_color(bg);
-                ud_text(W->x + 2, W->y + y, list(W, i, NULL));
+                if(list_list)
+                    ud_text(W->x + 2, W->y + y, list_list[i]);
+                else
+                    ud_text(W->x + 2, W->y + y, list_fun(W, i, NULL));
             } else {
                 ud_set_color(fg);
-                ud_text(W->x + 2, W->y + y, list(W, i, NULL));
+                if(list_list)
+                    ud_text(W->x + 2, W->y + y, list_list[i]);
+                else
+                    ud_text(W->x + 2, W->y + y, list_fun(W, i, NULL));
             }
         }
         ud_set_color(fg);
@@ -969,11 +992,7 @@ int uw_listbox(uWidget *W, int msg, int param) {
     } else if(msg == UM_CLICK) {
         int mx = (param >> 16) & 0xFFFF, my = param & 0xFFFF;
 
-        int n;
-        if(!list) return UW_OK;
-        list(W, -1, &n);
         int scroll = uu_get_attr_i(W, "scroll");
-
         int x = W->x + W->w - 6 - 1;
         if(mx > x) {
             scroll = uu_click_scrollbar(mx, my, W->x + W->w - 6, W->y, 6, W->h, scroll, n, ch + 2);
@@ -983,7 +1002,6 @@ int uw_listbox(uWidget *W, int msg, int param) {
             if(y > n - 1) y = n - 1;
             uu_set_attr_i(W, "index", y);
         }
-        ugi_widget_action cb = uu_get_action(W);
         if(cb)
             cb(W);
         return UW_HANDLED;
@@ -994,10 +1012,11 @@ int uw_listbox(uWidget *W, int msg, int param) {
             return UW_UNFOCUS;
         }
     } else if(msg == UM_KEY) {
-        int idx = uu_get_attr_i(W, "index"), n;
+        int idx = uu_get_attr_i(W, "index");
 
-        list(W, -1, &n);
-        assert(n > 0);
+        if(n == 0)
+            return UW_OK;
+
         if(param == UK_DOWN) {
             if(ud_get_key_state(UK_SHIFT))
                 return UW_UNFOCUS;
@@ -1027,7 +1046,6 @@ int uw_listbox(uWidget *W, int msg, int param) {
                 scroll = 0;
             uu_set_attr_i(W, "scroll", scroll);
         }
-        ugi_widget_action cb = uu_get_action(W);
         if(cb)
             cb(W);
         return UW_HANDLED;
@@ -1078,7 +1096,7 @@ void uu_combo_menu_action(struct uMenu *menu, void *udata) {
     uWidget *W = udata;
     assert(W->fun == uw_combo);
     uu_set_attr_s(W, "value", menu->title);
-    ugi_widget_action cb = uu_get_action(W);
+    ugi_widget_action cb = uu_get_attr_p(W, UA_CHANGE);
     if(cb)
         cb(W);
 }
@@ -1401,7 +1419,7 @@ int uw_timer(uWidget *W, int msg, int param) {
         int after = uu_get_attr_i(W, "after");
         if(elapsed > after) {
             int result = UW_OK;
-            ugi_widget_action cb = uu_get_action(W);
+            ugi_widget_action cb = uu_get_attr_p(W, UA_ACTION);
             if(cb)
                 cb(W);
             uu_set_attr_i(W, "time", 0);
@@ -1478,9 +1496,7 @@ uWidget *ugi_add(uDialog *D, ugi_widget_fun fun, int x, int y, int w, int h) {
     uu_set_flag(W, UA_DIRTY);
 
     W->font = ugi_font;
-
     W->D = D;
-    W->idx = idx;
 
     widget_msg(W, UM_START, 0);
     return W;

@@ -158,7 +158,7 @@ int ugisdl_process_event(SDL_Event *e) {
 int usw_dial(uWidget *W, int msg, int param) {
 
     uRect pos = uu_get_position(W);
-    ugi_widget_action cb = uu_get_action(W);
+    ugi_widget_action cb = uu_get_attr_p(W, UA_CHANGE);
 
     if(msg == UM_START) {
         int r = (pos.w < pos.h ? pos.w : pos.h)/2 - 5;
@@ -304,7 +304,7 @@ int usw_icon(uWidget *W, int msg, int param) {
         bm_blit_ex(screen, pos.x, pos.y, pos.w, pos.h, b, src_x, src_y, src_w, src_h, mask);
         return UW_OK;
     }else if(msg == UM_CLICK) {
-        ugi_widget_action cb = uu_get_action(W);
+        ugi_widget_action cb = uu_get_attr_p(W, UA_CLICK);
         if(cb) {
             cb(W);
             return UW_HANDLED;

@@ -20,7 +20,7 @@ typedef enum {
     UM_WANTFOCUS,
     UM_GETFOCUS,
     UM_LOSEFOCUS,
-    UM_CHANGE,
+    UM_CHANGE, // TODO: This should be removed
 } uMessage;
 
 typedef enum {
@@ -81,9 +81,12 @@ uDialog *uu_get_dialog(uWidget *W);
 
 #define UA_DATA        "data"
 #define UA_ACTION      "action"
+#define UA_CLICK       "click"
+#define UA_CHANGE      "change"
 #define UA_DIRTY       "dirty"
 #define UA_FOCUS       "focus"
 #define UA_HIDDEN      "hidden"
+#define UA_DISABLED    "disabled"
 #define UA_BACKGROUND  "background"
 #define UA_FOREGROUND  "foreground"
 
@@ -104,9 +107,6 @@ int uu_get_flag(uWidget *W, const char *key);
 
 void uu_set_data(uWidget *W, void *val);
 void *uu_get_data(uWidget *W);
-
-void uu_set_action(uWidget *W, void *val);
-void *uu_get_action(uWidget *W);
 
 void uu_set_font(uWidget *W, void *font);
 void *uu_get_font(uWidget *W);

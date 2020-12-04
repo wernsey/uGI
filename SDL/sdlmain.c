@@ -20,11 +20,11 @@ static Uint32 Start;
 /*
 A throwback to my misguided youth when I dabbled in Visual Basic
 */
-static void DoEvents() {
+int DoEvents() {
     Uint32 elapsed = SDL_GetTicks() - Start;
     if(elapsed == 0) {
         SDL_Delay(10);
-        return;
+        return !Done;
     }
     SDL_Event e;
     if(SDL_PollEvent(&e)) {
@@ -49,6 +49,8 @@ static void DoEvents() {
     SDL_RenderCopy(Renderer, Texture, NULL, NULL);
     SDL_RenderPresent(Renderer);
     Start = SDL_GetTicks();
+
+    return !Done;
 }
 
 static int dialog_btn_callback(uWidget *W) {
@@ -85,14 +87,15 @@ void dlg_message(const char *message) {
 
     W = ugi_add(D, uw_button, wx + (ww - 40)/2, wy + wh - 16 - 4, 40, 16);
     uu_set_attr_s(W, "label", "OK");
-    uu_set_action(W, dialog_btn_callback);
+    uu_set_attr_p(W, UA_CLICK, dialog_btn_callback);
     uu_set_attr_i(W, UA_FOCUS, 1);
 
     /* This won't work with Emscripten because browsers
         just don't work that way */
+    int d;
     do {
-        DoEvents();
-    } while(ugi_get_top() == top);
+        d = DoEvents();
+    } while(ugi_get_top() == top && d);
 }
 
 int dlg_yes_no(const char *prompt) {
@@ -122,20 +125,21 @@ int dlg_yes_no(const char *prompt) {
 
     W = ugi_add(D, uw_button, wx + ww - 40 - 4, wy + wh - 16 - 4, 40, 16);
     uu_set_attr_s(W, "label", "No");
-    uu_set_action(W, dialog_btn_callback);
+    uu_set_attr_p(W, UA_CLICK, dialog_btn_callback);
 
     W = ugi_add(D, uw_button, wx + ww - 40 - 4 - 40 - 4, wy + wh - 16 - 4, 40, 16);
     uu_set_attr_s(W, "label", "Yes");
-    uu_set_action(W, dialog_btn_callback);
+    uu_set_attr_p(W, UA_CLICK, dialog_btn_callback);
     uu_set_attr_p(W, "variable", &yes);
     uu_set_attr_i(W, "value", 1);
     uu_set_flag(W, UA_FOCUS);
 
     /* This won't work with Emscripten because browsers
         just don't work that way */
+    int d;
     do {
-        DoEvents();
-    } while(ugi_get_top() == top);
+        d = DoEvents();
+    } while(ugi_get_top() == top && d);
     return yes;
 }
 

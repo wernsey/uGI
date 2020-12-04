@@ -9,5 +9,8 @@ extern int init_gui();
 
 extern void deinit_gui();
 
+/* Use with caution */
+int DoEvents();
+
 void dlg_message(const char *message);
 int dlg_yes_no(const char *prompt);
