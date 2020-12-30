@@ -175,7 +175,7 @@ int init_gui() {
 
 
     W = ugi_add(D, uw_menubar, 0, 10, SCREEN_WIDTH, 0);
-    uu_set_data(W, mainmenu);
+    uu_set_attr_p(W, UA_MENU, mainmenu);
 
     char *txt = readfile("test.c");
     if(!txt)

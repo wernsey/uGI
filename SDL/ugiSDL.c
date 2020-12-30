@@ -287,7 +287,7 @@ int usw_icon(uWidget *W, int msg, int param) {
         if(uu_get_flag(W, UA_HIDDEN))
             return UW_OK;
 
-        Bitmap *b = uu_get_data(W);
+        Bitmap *b = uu_get_attr_p(W, "bitmap");
         if(!b) {
             unsigned int fg;
             uu_get_color_attrs(W, NULL, &fg);
@@ -303,7 +303,7 @@ int usw_icon(uWidget *W, int msg, int param) {
         if(!src_h) src_h = bm_height(b);
         bm_blit_ex(screen, pos.x, pos.y, pos.w, pos.h, b, src_x, src_y, src_w, src_h, mask);
         return UW_OK;
-    }else if(msg == UM_CLICK) {
+    } else if(msg == UM_CLICK) {
         ugi_widget_action cb = uu_get_attr_p(W, UA_CLICK);
         if(cb) {
             cb(W);

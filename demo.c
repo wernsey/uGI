@@ -33,6 +33,12 @@ void menu_item_dialog_demo(uMenu *menu, void *data) {
         dlg_message("You clicked the 'Yes' button");
 }
 
+void menu_item_file_select_demo(uMenu *menu, void *data) {
+    const char *path = dlg_file_select(menu->data, ".", "*.c");
+    if(path)
+        dlg_messagef("You chose to %s %s", menu->data, path);
+}
+
 void show_popup(uMenu *menu, void *data) {
     uDialog *popup = ugi_start();
     uWidget *W = ugi_add(popup, uw_clear_dith, 0,0, 0,0);
@@ -84,8 +90,8 @@ uMenu editmenu[] = {
 
 uMenu filemenu[] = {
     {"New", menu_item,  NULL, NULL},
-    {"Open", menu_item, NULL, NULL},
-    {"Save", menu_item, NULL, NULL},
+    {"Open", menu_item_file_select_demo, NULL, "Open"},
+    {"Save", menu_item_file_select_demo, NULL, "Save"},
     {"SubMenu", NULL, submenu, NULL},
     {"Exit", menu_item, NULL, NULL},
     {NULL, NULL, NULL, NULL},
@@ -129,7 +135,7 @@ int init_gui() {
     uu_set_attr_s(W, "label", "uGI Demo");
 
     W = ugi_add(D, uw_menubar, 0, 10, SCREEN_WIDTH, 0);
-    uu_set_data(W, mainmenu);
+    uu_set_attr_p(W, UA_MENU, mainmenu);
 
     W = ugi_add(D, uw_label, 4, SCREEN_HEIGHT - 6 - 1, SCREEN_WIDTH/2, 6);
     uu_set_attr_s(W, "label", "Text Label");
@@ -179,7 +185,7 @@ int init_gui() {
 
     W = ugi_add(D, uw_combo, 4, 100, SCREEN_WIDTH/2 - 4, 10);
     uu_set_attr_s(W, "value", "Please Choose...");
-    uu_set_data(W, combomenu);
+    uu_set_attr_p(W, UA_MENU, combomenu);
     uu_set_attr_p(W, UA_CHANGE, combo_callback);
 
     W = ugi_add(D, uw_listbox, SCREEN_WIDTH/2 + 4, 100, SCREEN_WIDTH/2 - 8, 52);
@@ -202,7 +208,7 @@ int init_gui() {
     W = ugi_add(D, usw_dial, SCREEN_WIDTH/2 + 4, 154, 32, 32);
 
     W = ugi_add(D, usw_icon, SCREEN_WIDTH/2 + 4 + 34, 154, 32, 32);
-    uu_set_data(W, icon);
+    uu_set_attr_p(W, "bitmap", icon);
 
     return 1;
 }

@@ -13,4 +13,6 @@ extern void deinit_gui();
 int DoEvents();
 
 void dlg_message(const char *message);
+void dlg_messagef(const char *fmt, ...);
 int dlg_yes_no(const char *prompt);
+const char *dlg_file_select(const char *message, const char *path, const char *pattern);
