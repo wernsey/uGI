@@ -162,7 +162,6 @@ void uu_set_attr_s(uWidget *W, const char *key, const char *val) {
     A->s = strdup(val);
     if(strcmp(key, UA_DIRTY))
         uu_set_attr_i(W, UA_DIRTY, 1);
-    //     widget_msg(W, UM_CHANGE, 0);
 }
 
 void uu_set_attrf(uWidget *W, const char *key, const char *fmt, ...) {
@@ -180,7 +179,6 @@ void uu_set_attr_i(uWidget *W, const char *key, int val) {
     A->i = val;
     if(strcmp(key, UA_DIRTY))
         uu_set_attr_i(W, UA_DIRTY, 1);
-    //     widget_msg(W, UM_CHANGE, 0);
 }
 
 int uu_get_attr_i(uWidget *W, const char *key) {

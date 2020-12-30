@@ -36,13 +36,12 @@ void menu_item_dialog_demo(uMenu *menu, void *data) {
 void menu_item_file_select_demo(uMenu *menu, void *data) {
     const char *path = dlg_file_select(menu->data, ".", "*.c");
     if(path)
-        dlg_messagef("You chose to %s %s", menu->data, path);
+        dlg_messagef("You chose to %s\n%s", menu->data, path);
 }
 
 void show_popup(uMenu *menu, void *data) {
     uDialog *popup = ugi_start();
     uWidget *W = ugi_add(popup, uw_clear_dith, 0,0, 0,0);
-    //W = ugi_add(popup, uw_clear_dith, 20 + 5, 20 + 5, SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40);
     W = ugi_add(popup, uw_frame, 20, 20, SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40);
     uu_set_attr_s(W, "label", menu->title);
 
@@ -53,7 +52,6 @@ void show_popup(uMenu *menu, void *data) {
 
 static const char *test_list(uWidget *W, int i, int *size) {
     static const char *list[] = {"foo", "bar", "baz", "fred", "quux", "blah", "alice", "bob", "carol", "dave", "eve", "frank", "gary", "harry", "iggy"};
-    //static const char *list[] = {"foo", "bar", "baz"};
     if(i < 0) {
         assert(size);
         *size = (sizeof list) / (sizeof list[0]);
