@@ -243,7 +243,6 @@ static char **dir_list(const char *path, const char *pattern) {
     char **list = NULL;
     int n = 0, a = 4, i;
 
-    DIR *dir = opendir(path);
 
     list = calloc(a, sizeof *list);
     struct dirent *d;
@@ -258,27 +257,38 @@ static char **dir_list(const char *path, const char *pattern) {
         token = strtok_r(NULL, ";", &saveptr);
     }
 
+    DIR *dir = opendir(path);
     while((d = readdir(dir))) {
+        if(d->d_type != DT_DIR)
+            continue;
         if(n == a - 1) {
             a <<= 1;
             list = realloc(list, a * sizeof *list);
         }
-        if(d->d_type == DT_DIR) {
-            //list[n++] = strdup(d->d_name);
-            size_t len = strlen(d->d_name) + 2;
-            list[n] = malloc(len);
-            snprintf(list[n++], len, "%s%c", d->d_name, DIR_SEP);
-        } else {
-            for(i = 0; i < np; i++) {
-                if(patterns[i][0] && match(d->d_name, patterns[i])) {
-                    list[n++] = strdup(d->d_name);
-                }
+        size_t len = strlen(d->d_name) + 2;
+        list[n] = malloc(len);
+        snprintf(list[n++], len, "%s%c", d->d_name, DIR_SEP);
+    }
+    closedir(dir);
+
+    dir = opendir(path);
+    while((d = readdir(dir))) {
+        if(d->d_type == DT_DIR)
+            continue;
+        if(n == a - 1) {
+            a <<= 1;
+            list = realloc(list, a * sizeof *list);
+        }
+        for(i = 0; i < np; i++) {
+            if(patterns[i][0] && match(d->d_name, patterns[i])) {
+                list[n++] = strdup(d->d_name);
             }
         }
     }
+    closedir(dir);
+
     list[n] = NULL;
 
-    closedir(dir);
     return list;
 }
 
@@ -314,6 +324,7 @@ static void set_directory(uWidget *W) {
     list = dir_list(path, pattern);
     uu_set_attr_p(W, "list", list);
     uu_set_attr_i(W, "index", 0);
+    uu_set_attr_i(W, "scroll", 0);
 
     W = ugi_get_by_id(D, "filename");
     uu_set_attr_s(W, "text", "");
@@ -365,19 +376,6 @@ static int file_select_change_callback(uWidget *W) {
         return 1;
     char *item = list[idx];
 
-    /*
-    struct stat st;
-    if(stat(item, &st)) {
-        SDL_Log("error stat'ing %s", item);
-        return 1;
-    }
-    if(st.st_mode & S_IFDIR) {
-        SDL_Log("it's a directory");
-    } else if(st.st_mode & S_IFREG) {
-        SDL_Log("it's a regular file");
-    }
-    */
-
     char cwd[256], newpath[256];
     getcwd(cwd, sizeof cwd);
 
@@ -409,6 +407,12 @@ static int file_select_change_callback(uWidget *W) {
 
 const char *dlg_file_select(const char *message, const char *path, const char *pattern) {
 
+    /*
+    Inspirations
+    http://www.steinke.net/allegro/chooser_screen.gif
+    https://ilyabirman.net/meanwhile/pictures/tp-15.png
+    */
+
     filename_buffer[0] = '\0';
     char savedir[256];
     int ok = 0;
@@ -430,7 +434,6 @@ const char *dlg_file_select(const char *message, const char *path, const char *p
 
     void *font = ugi_get_default_font();
     int tw = ud_text_width(font, message);
-    //int th = ud_text_height(font, message);
 
     int ww = 280, wh = 180;
     int wx = (SCREEN_WIDTH - ww) / 2, wy = (SCREEN_HEIGHT - wh)/2;
@@ -439,10 +442,6 @@ const char *dlg_file_select(const char *message, const char *path, const char *p
     uu_set_attr_s(W, "label", message);
 
     y = wy + 12;
-
-    // W = ugi_add(D, uw_label, wx + 4, y, tw, th);
-    // uu_set_attr_s(W, "label", message);
-    // y += th + 2;
 
     tw = ud_text_width(font, "Path");
 
